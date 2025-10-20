@@ -1,3 +1,5 @@
+let continualId = 1;
+
 // Code for adding item to the filter
 async function getContinualEventYears(continualId) {
     try {
@@ -97,7 +99,7 @@ async function getContinualEventsComplete(continualId) {
     }
 }
 
-getContinualEventsComplete(1).then(data => {
+getContinualEventsComplete(continualId).then(data => {
     const title = {
         text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
     };
@@ -122,7 +124,20 @@ getContinualEventsComplete(1).then(data => {
     createChart(title, legend, xAxis, yAxis, series);
 })
 
-//---------------------------------------------
+
+
+
+// Manage current active button for viz section
+document.addEventListener('DOMContentLoaded', function() {
+    const vizButtons = document.querySelectorAll('.viz-button');
+    vizButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            vizButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+
 
 // Using fetch API
 async function getDataFromDatabase() {
