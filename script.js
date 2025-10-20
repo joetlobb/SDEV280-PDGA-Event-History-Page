@@ -4,28 +4,45 @@ async function getContinualEventsComplete(continualId) {
     try {
         const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsComplete&continualId=${continualId}`;
         const response = await fetch(url);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
     }
 }
 
-getContinualEventsComplete(1).then(data => console.log(data))
+getContinualEventsComplete(1).then(data => {
+    console.log(data)
+
+    const title = {
+        text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
+    };
+    const legend = {
+        data: ['Participants']
+    }
+    const yearList = data.map(event => {
+        return event.year;
+    });
+    const xAxis = {
+        data: yearList
+    }
+    const yAxis = {}
+    const playerCounts = data.map(event => {
+        return event.player_count;
+    });
+    const series = [{
+        name: 'Participants',
+        data: playerCounts,
+        type: 'line'
+    }]
+    createChart(title, legend, xAxis, yAxis, series);
+})
 
 //---------------------------------------------
-
-
-
-
-
-
-
-
 
 // Using fetch API
 async function getDataFromDatabase() {
@@ -48,32 +65,25 @@ button1.addEventListener("click", function () {
     })
 });
 
-// Initialize the echarts instance based on the prepared dom
-var myChart = echarts.init(document.getElementById('viz'));
 
-// Specify the configuration items and data for the chart
-var option = {
-    title: {
-        text: 'ECharts Getting Started Example'
-    },
-    tooltip: {},
-    legend: {
-        data: ['sales']
-    },
-    xAxis: {
-        data: ['Shirts', 'Cardigans', 'Chiffons', 'Pants', 'Heels', 'Socks']
-    },
-    yAxis: {},
-    series: [
-        {
-            name: 'sales',
-            type: 'bar',
-            data: [5, 20, 36, 10, 10, 20]
-        }
-    ]
-};
 
-// Display the chart using the configuration items and data just specified.
-myChart.setOption(option);
+
+function createChart(title, legend, xAxis, yAxis, series) {
+    // Initialize the echarts instance based on the prepared dom
+    var myChart = echarts.init(document.getElementById('viz'));
+
+    // Specify the configuration items and data for the chart
+    var option = {
+        title: title,
+        tooltip: {},
+        legend: legend,
+        xAxis: xAxis,
+        yAxis: yAxis,
+        series: series
+    };
+
+    // Display the chart using the configuration items and data just specified.
+    myChart.setOption(option);
+}
 
 
