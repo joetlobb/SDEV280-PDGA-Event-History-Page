@@ -234,6 +234,63 @@ switch ($_GET['queryType'] ?? '') {
         echo json_encode($data);
         $stmt->close();
         break;
+
+    case 'getContinualEventsDivisions':
+        $continualId = $_GET['continualId'] ?? '';
+
+        if (empty($continualId)) {
+            echo json_encode(['error' => 'continualId is required']);
+            exit;
+        }
+
+        $stmt = $conn->prepare("
+        SELECT DISTINCT
+            ce.pdga_event_id,
+            YEAR(e.start_date) AS year,
+            er.division
+        FROM 
+            continual_events ce
+        JOIN 
+            events e ON ce.pdga_event_id = e.pdga_event_id
+        JOIN 
+            event_results er ON e.pdga_event_id = er.pdga_event_id
+        WHERE 
+            ce.continual_id = ?
+        ORDER BY 
+            e.start_date ASC, er.division ASC
+    ");
+
+        if (!$stmt) {
+            echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
+            exit;
+        }
+
+        $stmt->bind_param("i", $continualId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        // Organize data by event
+        $events = [];
+        while ($row = $result->fetch_assoc()) {
+            $eventId = $row['pdga_event_id'];
+
+            if (!isset($events[$eventId])) {
+                $events[$eventId] = [
+                    'pdga_event_id' => $eventId,
+                    'year' => $row['year'],
+                    'divisions' => []
+                ];
+            }
+
+            $events[$eventId]['divisions'][] = $row['division'];
+        }
+
+        // Convert to indexed array
+        $data = array_values($events);
+
+        echo json_encode($data);
+        $stmt->close();
+        break;
 }
 
 $conn->close();
