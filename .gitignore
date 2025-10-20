@@ -1,0 +1,53 @@
+# ----------------------------------------------------------------------
+# 1. Operating System and Editor Files
+# ----------------------------------------------------------------------
+
+# Windows/macOS temporary files
+Thumbs.db
+.DS_Store
+*.swp
+*.~
+.idea/
+.vscode/
+
+# Build/packaging directory
+/dist
+/build
+/out
+
+# ----------------------------------------------------------------------
+# 2. PHP Specific Files
+# ----------------------------------------------------------------------
+
+# Composer (if used for PHP dependencies)
+/vendor/
+composer.lock
+
+# PHP cache and session data
+*.phar
+*.phar.asc
+*.log
+*.sqlite
+/tmp/
+
+# ----------------------------------------------------------------------
+# 3. JavaScript/Node.js Specific Files (Even if just for tools/dependencies)
+# ----------------------------------------------------------------------
+
+# Dependency directory (if you use npm/yarn)
+/node_modules
+
+# Package manager lock files
+package-lock.json
+yarn.lock
+npm-debug.log*
+
+# ----------------------------------------------------------------------
+# 4. Uploads/Config (if applicable)
+# ----------------------------------------------------------------------
+
+# Files that should be secure or user-uploaded (not version controlled)
+.env
+.env.local
+/uploads/
+config.local.php
