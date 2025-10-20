@@ -195,6 +195,45 @@ switch ($_GET['queryType'] ?? '') {
         echo json_encode($data);
         $stmt->close();
         break;
+
+    case 'getContinualEventYears':
+        $continualId = $_GET['continualId'] ?? '';
+
+        if (empty($continualId)) {
+            echo json_encode(['error' => 'continualId is required']);
+            exit;
+        }
+
+        $stmt = $conn->prepare("
+        SELECT DISTINCT
+            YEAR(e.start_date) AS year
+        FROM 
+            continual_events ce
+        JOIN 
+            events e ON ce.pdga_event_id = e.pdga_event_id
+        WHERE 
+            ce.continual_id = ?
+        ORDER BY 
+            year ASC
+    ");
+
+        if (!$stmt) {
+            echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
+            exit;
+        }
+
+        $stmt->bind_param("i", $continualId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+
+        echo json_encode($data);
+        $stmt->close();
+        break;
 }
 
 $conn->close();

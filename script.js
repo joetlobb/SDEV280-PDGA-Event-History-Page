@@ -1,5 +1,31 @@
-// Code for participants trend viz
+// Code for adding item to the filter
+async function getContinualEventYears(continualId) {
+    try {
+        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventYears&continualId=${continualId}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
 
+async function processYears() {
+    const years = await getContinualEventYears(1);
+    const yearList = years.map(item => item.year);
+    const yearNumbers = years.map(item => parseInt(item.year));
+    addYearList(yearNumbers);
+}
+
+// Call it
+processYears();
+
+
+// Code for participants trend viz
 async function getContinualEventsComplete(continualId) {
     try {
         const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsComplete&continualId=${continualId}`;
@@ -62,8 +88,6 @@ button1.addEventListener("click", function () {
         alert("Total Players: " + data[0]["Total Players"]);
     })
 });
-
-
 
 
 function createChart(title, legend, xAxis, yAxis, series) {
