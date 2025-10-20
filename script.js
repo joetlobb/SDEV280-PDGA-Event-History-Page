@@ -99,44 +99,136 @@ async function getContinualEventsComplete(continualId) {
     }
 }
 
-getContinualEventsComplete(continualId).then(data => {
-    const title = {
-        text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
-    };
-    const legend = {
-        data: ['Participants']
-    }
-    const yearList = data.map(event => {
-        return event.year;
-    });
-    const xAxis = {
-        data: yearList
-    }
-    const yAxis = {}
-    const playerCounts = data.map(event => {
-        return event.player_count;
-    });
-    const series = [{
-        name: 'Participants',
-        data: playerCounts,
-        type: 'line'
-    }]
-    createChart(title, legend, xAxis, yAxis, series);
-})
-
-
-
-
 // Manage current active button for viz section
-document.addEventListener('DOMContentLoaded', function() {
+// --- Placeholder Visualization Functions ---
+// These functions will contain the actual ECharts rendering logic.
+function renderParticipantsTrend() {
+        getContinualEventsComplete(continualId).then(data => {
+        const title = {
+            text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
+        };
+        const legend = {
+            data: ['Participants']
+        }
+        const yearList = data.map(event => {
+            return event.year;
+        });
+        const xAxis = {
+            data: yearList
+        }
+        const yAxis = {}
+        const playerCounts = data.map(event => {
+            return event.player_count;
+        });
+        const series = [{
+            name: 'Participants',
+            data: playerCounts,
+            type: 'line'
+        }]
+        createChart(title, legend, xAxis, yAxis, series);
+    })
+}
+
+function renderEventTrendsOverTime() {
+    console.log('Rendering: Event Trends Over Time (Tier Distribution)');
+    // Logic to fetch data and render a Stacked Bar/Pie chart of Tiers per Year
+}
+
+function renderTierDistribution() {
+    console.log('Rendering: Tier Distribution (Bar Chart)');
+}
+
+function renderGeographicDistribution() {
+    console.log('Rendering: Geographic Distribution (Map)');
+}
+
+function renderPrizeMoneyAnalysis() {
+    console.log('Rendering: Prize Money Analysis');
+}
+
+function renderAverageRatings() {
+    console.log('Rendering: Average Ratings');
+}
+
+function renderCourseDifficulty() {
+    console.log('Rendering: Course Difficulty');
+}
+
+// --- Main Handler Function ---
+function handleVizButtonClick(buttonText) {
+    // The 'buttonText' determines which specific visualization function to call.
+    switch (buttonText) {
+        case 'Participants Trend':
+            renderParticipantsTrend();
+            break;
+
+        case 'Event Trends Over Time':
+            renderEventTrendsOverTime();
+            break;
+
+        // Assuming 'CLICK ME' is now 'Tier Distribution' or similar
+        case 'Tier Distribution': 
+            renderTierDistribution();
+            break;
+
+        case 'Geographic Distribution':
+            renderGeographicDistribution();
+            break;
+
+        case 'Prize Money Analysis':
+            renderPrizeMoneyAnalysis();
+            break;
+
+        case 'Average Ratings':
+            renderAverageRatings();
+            break;
+
+        case 'Course Difficulty':
+            renderCourseDifficulty();
+            break;
+
+        default:
+            console.error('Unknown visualization button:', buttonText);
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
     const vizButtons = document.querySelectorAll('.viz-button');
+
+    // 1. Add click handlers for interaction
     vizButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
+            // Remove active class from all
             vizButtons.forEach(btn => btn.classList.remove('active'));
+
+            // Set the clicked button as active
             this.classList.add('active');
+
+            // Get the text and execute the handler
+            const buttonText = this.textContent.trim();
+            handleVizButtonClick(buttonText);
         });
     });
+
+    
+    // 2. Initial Page Load Logic (To render the first chart)
+    // Find the button that is already marked 'active' in the HTML and run its handler.
+    const initialActiveButton = document.querySelector('.viz-button.active');
+    
+    if (initialActiveButton) {
+        const initialButtonText = initialActiveButton.textContent.trim();
+        console.log(`Running initial visualization: ${initialButtonText}`);
+        handleVizButtonClick(initialButtonText);
+    } else if (vizButtons.length > 0) {
+        // If no button has 'active' set in HTML, activate the first one by default
+        const firstButton = vizButtons[0];
+        firstButton.classList.add('active');
+        console.log(`No active button found. Defaulting to: ${firstButton.textContent.trim()}`);
+        handleVizButtonClick(firstButton.textContent.trim());
+    }
 });
+
 
 
 // Using fetch API
