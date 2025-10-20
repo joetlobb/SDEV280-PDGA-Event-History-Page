@@ -61,6 +61,79 @@ switch($_GET['queryType'] ?? '') {
         $stmt->close();
         break;
         
+    case 'getEventDatesByIds':
+    $eventIds = $_GET['eventIds'] ?? '';
+    
+    if (empty($eventIds)) {
+        echo json_encode(['error' => 'eventIds is required']);
+        exit;
+    }
+    
+    // Convert comma-separated string to array
+    $idsArray = explode(',', $eventIds);
+    
+    // Validate all are numeric
+    foreach ($idsArray as $id) {
+        if (!is_numeric($id)) {
+            echo json_encode(['error' => 'Invalid event ID']);
+            exit;
+        }
+    }
+    
+    // Create placeholders for prepared statement
+    $placeholders = implode(',', array_fill(0, count($idsArray), '?'));
+    
+    $stmt = $conn->prepare("SELECT pdga_event_id, start_date FROM events WHERE pdga_event_id IN ($placeholders) ORDER BY pdga_event_id");
+    
+    if (!$stmt) {
+        echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
+        exit;
+    }
+    
+    // Bind parameters dynamically
+    $types = str_repeat('i', count($idsArray));
+    $stmt->bind_param($types, ...$idsArray);
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $data = [];
+    while($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+    
+    echo json_encode($data);
+    $stmt->close();
+    break;
+        
+    case 'getEventById':
+    $eventId = $_GET['eventId'] ?? '';
+    
+    if (empty($eventId)) {
+        echo json_encode(['error' => 'eventId is required']);
+        exit;
+    }
+    
+    $stmt = $conn->prepare("SELECT * FROM events WHERE pdga_event_id = ?");
+    
+    if (!$stmt) {
+        echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
+        exit;
+    }
+    
+    $stmt->bind_param("i", $eventId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $data = [];
+    while($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+    
+    echo json_encode($data);
+    $stmt->close();
+    break;
+        
     default:
         echo json_encode([
             'error' => 'Invalid query type',
