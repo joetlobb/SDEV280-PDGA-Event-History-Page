@@ -16,8 +16,6 @@ async function getContinualEventsComplete(continualId) {
 }
 
 getContinualEventsComplete(1).then(data => {
-    console.log(data)
-
     const title = {
         text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
     };
@@ -86,4 +84,29 @@ function createChart(title, legend, xAxis, yAxis, series) {
     myChart.setOption(option);
 }
 
+// Add list of year in that continual event to the filter option
+function addYearList(availableYears) {
+    availableYears.reverse();
+    const yearSelect = document.getElementById('year');
+    availableYears.forEach(year => {
+        const newOption = document.createElement('option');
+        newOption.textContent = year;
+        newOption.value = year;
+        yearSelect.appendChild(newOption);
+    });
+}
 
+// When Year Filter is selected-----------------------------
+const yearSelect = document.getElementById('year');
+
+yearSelect.addEventListener('change', function () {
+    const selectedYear = yearSelect.value;
+    console.log("The currently selected year is:", selectedYear);
+    if (selectedYear === "All Years") {
+        console.log("Showing data for all years.");
+    } else {
+        console.log(`Filtering data for the year ${selectedYear}.`);
+    }
+});
+
+console.log(yearSelect.value)
