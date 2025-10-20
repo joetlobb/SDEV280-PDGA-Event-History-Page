@@ -1,3 +1,38 @@
+// Code for participants trend viz
+
+async function getContinualId(continualId) {
+    try {
+        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualId&continualId=${continualId}`;     
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+const listOfContinualEvents = [];
+getContinualId(1).then(data => {
+    data.forEach(item => {
+        listOfContinualEvents.push(item.pdga_event_id);
+    });
+    listOfContinualEvents.sort((a, b) => a - b);
+    console.log(listOfContinualEvents);
+});
+
+//---------------------------------------------
+
+
+
+
+
+
+
+
+
 // Using fetch API
 async function getDataFromDatabase() {
     try {
@@ -46,3 +81,5 @@ button1.addEventListener("click", function() {
 
       // Display the chart using the configuration items and data just specified.
       myChart.setOption(option);
+
+
