@@ -104,11 +104,11 @@ async function getContinualEventsWithPrizes(continualId) {
     try {
         const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsWithPrizes&continualId=${continualId}`;
         const response = await fetch(url);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Error:', error);
@@ -131,9 +131,14 @@ function renderParticipantsTrend() {
             return event.year;
         });
         const xAxis = {
-            data: yearList
+            data: yearList,
+            name: 'Year',
         }
-        const yAxis = {}
+        const yAxis = {
+            name: 'Total Participants', // Set your Y-axis label here
+            nameLocation: 'middle', // Position the label in the middle of the axis
+            nameGap: 50, // Adjust the distance between the label and the axis line
+        }
         const playerCounts = data.map(event => {
             return event.player_count;
         });
@@ -142,7 +147,16 @@ function renderParticipantsTrend() {
             data: playerCounts,
             type: 'line'
         }]
-        createChart(title, legend, xAxis, yAxis, series);
+        const tooltip = {
+            // Formats the value for all series
+            valueFormatter: (value) => {
+                if (value === null || value === undefined) {
+                    return '-';
+                }
+                return value.toLocaleString() + ' players';
+            }
+        }
+        createChart(title, legend, xAxis, yAxis, series, tooltip);
     })
 }
 
@@ -171,9 +185,18 @@ function renderPrizeMoneyAnalysis() {
             return event.year;
         });
         const xAxis = {
-            data: yearList
+            data: yearList,
+            name: 'Year',
         }
-        const yAxis = {}
+        const yAxis = {
+            type: 'value',
+            name: 'Total Prize Money', // Set your Y-axis label here
+            nameLocation: 'middle', // Position the label in the middle of the axis
+            nameGap: 50, // Adjust the distance between the label and the axis line
+            axisLabel: {
+                formatter: '$ {value}' // Optional: Format the individual axis tick labels
+            }
+        }
         const totalPrize = data.map(event => {
             return event.total_prize;
         });
@@ -182,7 +205,16 @@ function renderPrizeMoneyAnalysis() {
             data: totalPrize,
             type: 'line'
         }]
-        createChart(title, legend, xAxis, yAxis, series);
+        const tooltip = {
+            // Formats the value for all series
+            valueFormatter: (value) => {
+                if (value === null || value === undefined) {
+                    return '-';
+                }
+                return '$' + value.toLocaleString();
+            }
+        }
+        createChart(title, legend, xAxis, yAxis, series, tooltip);
     })
 }
 
@@ -293,14 +325,14 @@ button1.addEventListener("click", function () {
 });
 
 
-function createChart(title, legend, xAxis, yAxis, series) {
+function createChart(title, legend, xAxis, yAxis, series, tooltip) {
     // Initialize the echarts instance based on the prepared dom
     var myChart = echarts.init(document.getElementById('viz'));
 
     // Specify the configuration items and data for the chart
     var option = {
         title: title,
-        tooltip: {},
+        tooltip: tooltip,
         legend: legend,
         xAxis: xAxis,
         yAxis: yAxis,
