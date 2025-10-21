@@ -138,6 +138,9 @@ function renderParticipantsTrend() {
             name: 'Total Participants', // Set your Y-axis label here
             nameLocation: 'middle', // Position the label in the middle of the axis
             nameGap: 50, // Adjust the distance between the label and the axis line
+            axisLabel: {
+                formatter: '{value}' // Optional: Format the individual axis tick labels
+            }
         }
         const playerCounts = data.map(event => {
             return event.player_count;
