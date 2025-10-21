@@ -157,7 +157,7 @@ switch ($_GET['queryType'] ?? '') {
         $stmt->close();
         break;
 
-    case 'getContinualEventsComplete':
+    case 'getContinualEventsParticipants':
         $continualId = $_GET['continualId'] ?? '';
 
         if (empty($continualId)) {
@@ -287,6 +287,49 @@ switch ($_GET['queryType'] ?? '') {
 
         // Convert to indexed array
         $data = array_values($events);
+
+        echo json_encode($data);
+        $stmt->close();
+        break;
+
+    case 'getContinualEventsWithPrizes':
+        $continualId = $_GET['continualId'] ?? '';
+
+        if (empty($continualId)) {
+            echo json_encode(['error' => 'continualId is required']);
+            exit;
+        }
+
+        $stmt = $conn->prepare("
+        SELECT 
+            ce.pdga_event_id,
+            YEAR(e.start_date) AS year,
+            COALESCE(SUM(er.cash), 0) AS total_prize
+        FROM continual_events ce
+        JOIN events e ON ce.pdga_event_id = e.pdga_event_id
+        LEFT JOIN event_results er ON e.pdga_event_id = er.pdga_event_id
+        WHERE ce.continual_id = ?
+        GROUP BY ce.pdga_event_id, e.start_date
+        ORDER BY e.start_date ASC
+    ");
+
+        if (!$stmt) {
+            echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
+            exit;
+        }
+
+        $stmt->bind_param("i", $continualId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = [
+                'pdga_event_id' => (int)$row['pdga_event_id'],
+                'year' => $row['year'],
+                'total_prize' => (int)$row['total_prize']
+            ];
+        }
 
         echo json_encode($data);
         $stmt->close();

@@ -84,9 +84,9 @@ processFilterEvent();
 
 
 // Code for participants trend viz
-async function getContinualEventsComplete(continualId) {
+async function getContinualEventsParticipants(continualId) {
     try {
-        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsComplete&continualId=${continualId}`;
+        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsParticipants&continualId=${continualId}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -99,11 +99,36 @@ async function getContinualEventsComplete(continualId) {
     }
 }
 
+// Code for total prize trend viz
+async function getContinualEventsWithPrizes(continualId) {
+    try {
+        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsWithPrizes&continualId=${continualId}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return [];
+    }
+}
+
+// Usage - ONE request, data already merged!
+
+
+(async () => {
+    const eventData = await getContinualEventsWithPrizes(1);
+console.log(eventData);
+})();
+
 // Manage current active button for viz section
 // --- Placeholder Visualization Functions ---
 // These functions will contain the actual ECharts rendering logic.
 function renderParticipantsTrend() {
-        getContinualEventsComplete(continualId).then(data => {
+    getContinualEventsParticipants(continualId).then(data => {
         const title = {
             text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
         };
@@ -167,7 +192,7 @@ function handleVizButtonClick(buttonText) {
             break;
 
         // Assuming 'CLICK ME' is now 'Tier Distribution' or similar
-        case 'Tier Distribution': 
+        case 'Tier Distribution':
             renderTierDistribution();
             break;
 
@@ -211,11 +236,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    
+
     // 2. Initial Page Load Logic (To render the first chart)
     // Find the button that is already marked 'active' in the HTML and run its handler.
     const initialActiveButton = document.querySelector('.viz-button.active');
-    
+
     if (initialActiveButton) {
         const initialButtonText = initialActiveButton.textContent.trim();
         console.log(`Running initial visualization: ${initialButtonText}`);
