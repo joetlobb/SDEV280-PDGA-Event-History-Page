@@ -116,14 +116,6 @@ async function getContinualEventsWithPrizes(continualId) {
     }
 }
 
-// Usage - ONE request, data already merged!
-
-
-(async () => {
-    const eventData = await getContinualEventsWithPrizes(1);
-console.log(eventData);
-})();
-
 // Manage current active button for viz section
 // --- Placeholder Visualization Functions ---
 // These functions will contain the actual ECharts rendering logic.
@@ -168,7 +160,30 @@ function renderGeographicDistribution() {
 }
 
 function renderPrizeMoneyAnalysis() {
-    console.log('Rendering: Prize Money Analysis');
+    getContinualEventsWithPrizes(continualId).then(data => {
+        const title = {
+            text: "Total Prize " + data[0].year + " - " + data[data.length - 1].year
+        };
+        const legend = {
+            data: ['Total Prize']
+        }
+        const yearList = data.map(event => {
+            return event.year;
+        });
+        const xAxis = {
+            data: yearList
+        }
+        const yAxis = {}
+        const totalPrize = data.map(event => {
+            return event.total_prize;
+        });
+        const series = [{
+            name: 'Total Prize',
+            data: totalPrize,
+            type: 'line'
+        }]
+        createChart(title, legend, xAxis, yAxis, series);
+    })
 }
 
 function renderAverageRatings() {
