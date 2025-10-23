@@ -31,6 +31,11 @@ header {
     font-size: 24px;
     font-weight: bold;
     letter-spacing: 2px;
+    height: 40px;
+}
+
+.logo > img {
+    height: 100%;
 }
 
 nav {
@@ -44,6 +49,12 @@ nav a {
     text-decoration: none;
     font-size: 14px;
     transition: opacity 0.3s;
+}
+
+nav a.active {
+    border-bottom: 3px solid white;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 nav a:hover {
