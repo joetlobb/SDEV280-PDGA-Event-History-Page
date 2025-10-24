@@ -121,66 +121,37 @@
         <!-- Events Table -->
         <div class="events-table">
             <h2>Recent Events</h2>
-            <table>
+            <table id="eventsTable">
                 <thead>
                     <tr>
                         <th>Event Name</th>
                         <th>Date</th>
                         <th>Tier</th>
-                        <th>Location</th>
-                        <th>Participants</th>
-                        <th>Winner (MPO)</th>
-                        <th>Winner (FPO)</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Country</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>PDGA World Championships</td>
-                        <td>Aug 15-19, 2024</td>
-                        <td><span class="tier-badge tier-a">Major</span></td>
-                        <td>Leicester, MA</td>
-                        <td>342</td>
-                        <td>Paul McBeth</td>
-                        <td>Kristin Tattar</td>
-                    </tr>
-                    <tr>
-                        <td>MVP Open</td>
-                        <td>Jul 8-11, 2024</td>
-                        <td><span class="tier-badge tier-a">Elite</span></td>
-                        <td>Maple Hill, MA</td>
-                        <td>156</td>
-                        <td>Ricky Wysocki</td>
-                        <td>Eveliina Salonen</td>
-                    </tr>
-                    <tr>
-                        <td>Texas States Championship</td>
-                        <td>Jun 20-23, 2024</td>
-                        <td><span class="tier-badge tier-b">A-Tier</span></td>
-                        <td>Austin, TX</td>
-                        <td>198</td>
-                        <td>Calvin Heimburg</td>
-                        <td>Paige Pierce</td>
-                    </tr>
-                    <tr>
-                        <td>Great Lakes Open</td>
-                        <td>May 15-18, 2024</td>
-                        <td><span class="tier-badge tier-b">A-Tier</span></td>
-                        <td>Milwaukee, WI</td>
-                        <td>124</td>
-                        <td>Eagle McMahon</td>
-                        <td>Catrina Allen</td>
-                    </tr>
-                    <tr>
-                        <td>Portland Open</td>
-                        <td>Apr 10-13, 2024</td>
-                        <td><span class="tier-badge tier-c">B-Tier</span></td>
-                        <td>Portland, OR</td>
-                        <td>87</td>
-                        <td>Simon Lizotte</td>
-                        <td>Hailey King</td>
-                    </tr>
+                <tbody id="tableBody">
+                    <!-- Data will be inserted here by JavaScript -->
                 </tbody>
             </table>
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="startEntry">1</span> to <span id="endEntry">5</span> of <span
+                        id="totalEntries">0</span> entries
+                </div>
+
+                <div class="pagination-controls">
+                    <button class="pagination-btn" id="firstBtn">First</button>
+                    <button class="pagination-btn" id="prevBtn">Previous</button>
+
+                    <div id="pageNumbers"></div>
+
+                    <button class="pagination-btn" id="nextBtn">Next</button>
+                    <button class="pagination-btn" id="lastBtn">Last</button>
+                </div>
+            </div>
         </div>
     </div>
 </body>

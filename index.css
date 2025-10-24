@@ -34,7 +34,7 @@ header {
     height: 40px;
 }
 
-.logo > img {
+.logo>img {
     height: 100%;
 }
 
@@ -253,6 +253,8 @@ nav a:hover {
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 20px;
+    table-layout: fixed; 
 }
 
 thead {
@@ -271,10 +273,35 @@ td {
     padding: 12px;
     border-bottom: 1px solid #eee;
     font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+td:hover {
+    overflow: visible;
+    white-space: normal;
+}
+
+th:first-child,
+td:first-child {
+    width: 400px; /* Set your desired width */
 }
 
 tbody tr:hover {
     background-color: #f9f9f9;
+}
+
+tr.empty-row {
+    height: 46px; /* Same as regular rows */
+}
+
+tr.empty-row:hover {
+    background-color: transparent;
+}
+
+tr.empty-row td {
+    border-bottom: 1px solid #eee;
 }
 
 .tier-badge {
@@ -285,17 +312,121 @@ tbody tr:hover {
     font-weight: bold;
 }
 
+.tier-m {
+    background-color: #FFD700;
+    color: #333;
+}
+
+/* Elite Series - Blue */
+.tier-es {
+    background-color: #0066cc;
+    color: white;
+}
+
+/* A-Tier - Green */
 .tier-a {
-    background-color: #ffd700;
-    color: #333;
+    background-color: #28a745;
+    color: white;
 }
 
+/* B-Tier - Silver/Gray */
 .tier-b {
-    background-color: #c0c0c0;
-    color: #333;
+    background-color: #6c757d;
+    color: white;
 }
 
+/* C-Tier - Bronze */
 .tier-c {
     background-color: #cd7f32;
     color: white;
+}
+
+/* XA-Tier - Light Green */
+.tier-xa {
+    background-color: #5cb85c;
+    color: white;
+}
+
+/* XB-Tier - Light Gray */
+.tier-xb {
+    background-color: #95a5a6;
+    color: white;
+}
+
+/* XC-Tier - Light Brown */
+.tier-xc {
+    background-color: #c67f50;
+    color: white;
+}
+
+/* XM-Tier - Light Gold */
+.tier-xm {
+    background-color: #f0c419;
+    color: #333;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #666;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #0066cc;
+    color: white;
+    border-color: #0066cc;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn.active {
+    background: #0066cc;
+    color: white;
+    border-color: #0066cc;
+}
+
+.page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-size-selector select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.hidden {
+    display: none;
 }

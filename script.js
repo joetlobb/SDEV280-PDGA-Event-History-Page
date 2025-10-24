@@ -1,4 +1,179 @@
 let continualId = 1;
+let allData = [];
+
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               CODES FOR INITIAL LOAD UP 
+//
+// --------------------------------------------------------------------------------------------------------------------------
+
+async function getAllRecentEventsContinualList() {
+    try {
+        const url = `https://coderelic.greenriverdev.com/query2.php?queryType=getAllRecentEventsContinualList`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+(async function onPageLoad() {
+    let data = await getAllRecentEventsContinualList();
+    console.log(data)
+    allData = data;
+    renderTable()
+})();
+
+// --------------------------------------------------------------------------------------------------------------------------
+// Pagination
+
+let currentPage = 1;
+let pageSize = 5;
+
+function renderTable() {
+    const tableBody = document.getElementById('tableBody');
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, allData.length);
+
+    // Clear existing rows
+    tableBody.innerHTML = '';
+
+    // Add rows for current page
+    for (let i = startIndex; i < endIndex; i++) {
+        const item = allData[i];
+
+        switch (item.tier) {
+            case 'M':
+                item.tierCode = 'tier-m'
+                break;
+            case 'NT':
+                item.tierCode = 'tier-es'
+                item.tier = 'ES'
+                break;
+            case 'A':
+                item.tierCode = 'tier-a'
+                break;
+            case 'B':
+                item.tierCode = 'tier-b'
+                break;
+            case 'C':
+                item.tierCode = 'tier-c'
+                break;
+            case 'XA':
+                item.tierCode = 'tier-xa'
+                break;
+            case 'XB':
+                item.tierCode = 'tier-xb'
+                break;
+            case 'XC':
+                item.tierCode = 'tier-xc'
+                break;
+            case 'XM':
+                item.tierCode = 'tier-xm'
+                break;
+            default:
+                break;
+        }
+
+        const row = `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.start_date}</td>
+                        <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
+                        <td>${item.city}</td>
+                        <td>${item.state}</td>
+                        <td>${item.country}</td>
+                    </tr>
+                `;
+        tableBody.innerHTML += row;
+    }
+
+    const rowsToFill = pageSize - (endIndex - startIndex);
+    for (let i = 0; i < rowsToFill; i++) {
+        const emptyRow = `
+            <tr class="empty-row">
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+        `;
+        tableBody.innerHTML += emptyRow;
+    }
+
+    updatePaginationInfo();
+    updatePaginationControls();
+}
+
+function updatePaginationInfo() {
+    const startEntry = (currentPage - 1) * pageSize + 1;
+    const endEntry = Math.min(currentPage * pageSize, allData.length);
+
+    document.getElementById('startEntry').textContent = startEntry;
+    document.getElementById('endEntry').textContent = endEntry;
+    document.getElementById('totalEntries').textContent = allData.length;
+}
+
+function updatePaginationControls() {
+    const totalPages = Math.ceil(allData.length / pageSize);
+
+    // Update button states
+    document.getElementById('firstBtn').disabled = currentPage === 1;
+    document.getElementById('prevBtn').disabled = currentPage === 1;
+    document.getElementById('nextBtn').disabled = currentPage === totalPages;
+    document.getElementById('lastBtn').disabled = currentPage === totalPages;
+
+    // Generate page numbers
+    const pageNumbersDiv = document.getElementById('pageNumbers');
+    pageNumbersDiv.innerHTML = '';
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => {
+            currentPage = i;
+            renderTable();
+        };
+        pageNumbersDiv.appendChild(pageBtn);
+    }
+}
+
+// Event listeners
+document.getElementById('firstBtn').addEventListener('click', () => {
+    currentPage = 1;
+    renderTable();
+});
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+    }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+    const totalPages = Math.ceil(allData.length / pageSize);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+    }
+});
+
+document.getElementById('lastBtn').addEventListener('click', () => {
+    currentPage = Math.ceil(allData.length / pageSize);
+    renderTable();
+});
+
+// Initial render
+renderTable();
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
