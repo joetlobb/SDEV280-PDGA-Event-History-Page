@@ -1,5 +1,11 @@
 let continualId = 1;
 
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               CODES FOR FILTERING SECTION 
+//
+// --------------------------------------------------------------------------------------------------------------------------
+
 // Code for adding item to the filter
 async function getContinualEventYears(continualId) {
     try {
@@ -82,7 +88,65 @@ async function processFilterEvent() {
 // Call it
 processFilterEvent();
 
+// Add list of years in that continual event to the filter option
+function addYearList(availableYears) {
+    availableYears.reverse();
+    const yearSelect = document.getElementById('year');
+    availableYears.forEach(year => {
+        const newOption = document.createElement('option');
+        newOption.textContent = year;
+        newOption.value = year;
+        yearSelect.appendChild(newOption);
+    });
+}
 
+// Add list of divisions in that continual event to the filter option
+function addDivisionList(divisions) {
+    const divisionSelect = document.getElementById('division');
+    divisions.forEach(division => {
+        const newOption = document.createElement('option');
+        newOption.textContent = division;
+        newOption.value = division;
+        divisionSelect.appendChild(newOption);
+    });
+}
+
+
+// When Year Filter is selected-----------------------------
+const yearSelect = document.getElementById('year');
+
+yearSelect.addEventListener('change', function () {
+    const selectedYear = yearSelect.value;
+    console.log("The currently selected year is:", selectedYear);
+    if (selectedYear === "All Years") {
+        console.log("Showing data for all years.");
+    } else {
+        console.log(`Filtering data for the year ${selectedYear}.`);
+    }
+});
+
+console.log(yearSelect.value)
+
+// When Division Filter is selected-----------------------------
+const divisionSelect = document.getElementById('division');
+
+divisionSelect.addEventListener('change', function () {
+    const selectedDivision = divisionSelect.value;
+    console.log("The currently selected division is:", selectedDivision);
+    if (selectedDivision === "All Divisions") {
+        console.log("Showing data for all divisions.");
+    } else {
+        console.log(`Filtering data for the division ${selectedDivision}.`);
+    }
+});
+
+console.log(divisionSelect.value)
+
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               CODES FOR VISUALIZATION SECTION 
+//
+// --------------------------------------------------------------------------------------------------------------------------
 // Code for participants trend viz
 async function getContinualEventsParticipants(continualId) {
     try {
@@ -115,6 +179,12 @@ async function getContinualEventsWithPrizes(continualId) {
         return [];
     }
 }
+
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               CODES FOR VISUALIZATION BUTTON CLICKED 
+//
+// --------------------------------------------------------------------------------------------------------------------------
 
 // Manage current active button for viz section
 // --- Placeholder Visualization Functions ---
@@ -305,6 +375,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               CODES FOR QUERY TESTING
+//
+// --------------------------------------------------------------------------------------------------------------------------
 
 // Using fetch API
 async function getDataFromDatabase() {
@@ -327,6 +402,11 @@ button1.addEventListener("click", function () {
     })
 });
 
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               CODES FOR ECHART CREATION 
+//
+// --------------------------------------------------------------------------------------------------------------------------
 
 function createChart(title, legend, xAxis, yAxis, series, tooltip) {
     // Initialize the echarts instance based on the prepared dom
@@ -346,56 +426,4 @@ function createChart(title, legend, xAxis, yAxis, series, tooltip) {
     myChart.setOption(option);
 }
 
-// Add list of years in that continual event to the filter option
-function addYearList(availableYears) {
-    availableYears.reverse();
-    const yearSelect = document.getElementById('year');
-    availableYears.forEach(year => {
-        const newOption = document.createElement('option');
-        newOption.textContent = year;
-        newOption.value = year;
-        yearSelect.appendChild(newOption);
-    });
-}
 
-// Add list of divisions in that continual event to the filter option
-function addDivisionList(divisions) {
-    const divisionSelect = document.getElementById('division');
-    divisions.forEach(division => {
-        const newOption = document.createElement('option');
-        newOption.textContent = division;
-        newOption.value = division;
-        divisionSelect.appendChild(newOption);
-    });
-}
-
-
-// When Year Filter is selected-----------------------------
-const yearSelect = document.getElementById('year');
-
-yearSelect.addEventListener('change', function () {
-    const selectedYear = yearSelect.value;
-    console.log("The currently selected year is:", selectedYear);
-    if (selectedYear === "All Years") {
-        console.log("Showing data for all years.");
-    } else {
-        console.log(`Filtering data for the year ${selectedYear}.`);
-    }
-});
-
-console.log(yearSelect.value)
-
-// When Division Filter is selected-----------------------------
-const divisionSelect = document.getElementById('division');
-
-divisionSelect.addEventListener('change', function () {
-    const selectedDivision = divisionSelect.value;
-    console.log("The currently selected division is:", selectedDivision);
-    if (selectedDivision === "All Divisions") {
-        console.log("Showing data for all divisions.");
-    } else {
-        console.log(`Filtering data for the division ${selectedDivision}.`);
-    }
-});
-
-console.log(divisionSelect.value)
