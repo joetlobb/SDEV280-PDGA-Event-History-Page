@@ -126,17 +126,17 @@ function renderTable() {
 
     const rowsToFill = pageSize - (endIndex - startIndex);
     for (let i = 0; i < rowsToFill; i++) {
-        const emptyRow = `
-            <tr class="empty-row">
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-        `;
-        tableBody.innerHTML += emptyRow;
+        const emptyRow = document.createElement('tr');
+        emptyRow.className = 'empty-row';
+        emptyRow.innerHTML = `
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    `;
+        tableBody.appendChild(emptyRow);
     }
 
     updatePaginationInfo();
@@ -398,6 +398,40 @@ async function getContinualEventsWithPrizes(continualId) {
     }
 }
 
+async function getContinualEventsAverageRatingByDivision(continualId) {
+    try {
+        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsAverageRatingByDivision&continualId=${continualId}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return [];
+    }
+}
+
+//difference in rating visulization
+async function getContinualEventsDiffRating(continualId) {
+    try {
+        const url = `https://coderelic.greenriverdev.com/diffRatingQuery.php?queryType=getContinualEventsDiffRating&continualId=${continualId}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching rating difference data:', error);
+        return [];
+    }
+}
+
 // --------------------------------------------------------------------------------------------------------------------------
 //
 //                                               CODES FOR VISUALIZATION BUTTON CLICKED 
@@ -409,6 +443,7 @@ async function getContinualEventsWithPrizes(continualId) {
 // These functions will contain the actual ECharts rendering logic.
 function renderParticipantsTrend() {
     getContinualEventsParticipants(continualId).then(data => {
+        console.log(data)
         const title = {
             text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
         };
@@ -449,19 +484,6 @@ function renderParticipantsTrend() {
         }
         createChart(title, legend, xAxis, yAxis, series, tooltip);
     })
-}
-
-function renderEventTrendsOverTime() {
-    console.log('Rendering: Event Trends Over Time (Tier Distribution)');
-    // Logic to fetch data and render a Stacked Bar/Pie chart of Tiers per Year
-}
-
-function renderTierDistribution() {
-    console.log('Rendering: Tier Distribution (Bar Chart)');
-}
-
-function renderGeographicDistribution() {
-    console.log('Rendering: Geographic Distribution (Map)');
 }
 
 function renderPrizeMoneyAnalysis() {
@@ -510,11 +532,152 @@ function renderPrizeMoneyAnalysis() {
 }
 
 function renderAverageRatings() {
-    console.log('Rendering: Average Ratings');
+    getContinualEventsAverageRatingByDivision(continualId).then(data => {
+        if (!data || data.length === 0) {
+            console.error('No rating data available');
+            return;
+        }
+
+        // Sort divisions using your existing sortDivisions function
+        const sortedData = data.sort((a, b) => {
+            const customOrder = [
+                'MPO', 'MPG', 'FPO', 'FPG',
+                'MA40', 'MP40', 'FA40', 'FP40',
+                'MA50', 'MP50', 'FA50', 'FP50',
+                'MA55', 'MP55', 'FA55', 'FP55',
+                'MA60', 'MP60', 'FA60', 'FP60',
+                'MA65', 'MP65', 'FA65', 'FP65',
+                'MA70', 'MP70', 'FA70', 'FP70',
+                'MA75', 'MP75', 'FA75', 'FP75',
+                'MA80', 'MP80', 'FA80', 'FP80',
+                'MJ18', 'FJ18', 'MJ15', 'FJ15',
+                'MJ12', 'FJ12', 'MJ10', 'FJ10',
+                'MJ08', 'FJ08', 'MJ06', 'FJ06'
+            ];
+            const indexA = customOrder.indexOf(a.division);
+            const indexB = customOrder.indexOf(b.division);
+            if (indexA === -1 && indexB === -1) return a.division.localeCompare(b.division);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        const title = {
+            text: "Average Event Rating by Division"
+        };
+
+        const legend = {
+            data: ['Average Rating']
+        };
+
+        const divisionList = sortedData.map(item => item.division);
+
+        const xAxis = {
+            type: 'category',
+            data: divisionList,
+            name: 'Division',
+            axisLabel: {
+                rotate: 45  // Rotate labels if there are many divisions
+            }
+        };
+
+        const yAxis = {
+            type: 'value',
+            name: 'Average Rating',
+            nameLocation: 'middle',
+            nameGap: 50,
+            axisLabel: {
+                formatter: '{value}'
+            }
+        };
+
+        const avgRatings = sortedData.map(item => item.avg_rating);
+
+        const series = [{
+            name: 'Average Rating',
+            data: avgRatings,
+            type: 'bar',
+            itemStyle: {
+                color: '#5470c6'
+            }
+        }];
+
+        const tooltip = {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            },
+            formatter: function (params) {
+                const dataIndex = params[0].dataIndex;
+                const item = sortedData[dataIndex];
+                return `<strong>${item.division}</strong><br/>` +
+                    `Average Rating: ${item.avg_rating}<br/>` +
+                    `Total Players: ${item.player_count.toLocaleString()}`;
+            }
+        };
+
+        createChart(title, legend, xAxis, yAxis, series, tooltip);
+    });
 }
 
-function renderCourseDifficulty() {
-    console.log('Rendering: Course Difficulty');
+function renderDiffRating() {
+    getContinualEventsDiffRating(continualId).then(data => {
+        if (!data || data.length === 0) {
+            console.error('No rating difference data available');
+            return;
+        }
+
+        const title = {
+            text: "Difference in Rating " + data[0].year + " - " + data[data.length - 1].year
+        };
+
+        const legend = {
+            data: ['Average Rating Difference']
+        };
+
+        const yearList = data.map(event => {
+            return event.year;
+        });
+
+        const xAxis = {
+            data: yearList,
+            name: 'Year',
+        };
+
+        const yAxis = {
+            type: 'value',
+            name: 'Average Rating Difference',
+            nameLocation: 'middle',
+            nameGap: 50,
+            axisLabel: {
+                formatter: '{value}'
+            }
+        };
+
+        const ratingDifferences = data.map(event => {
+            return event.avg_diff_rating;
+        });
+
+        const series = [{
+            name: 'Average Rating Difference',
+            data: ratingDifferences,
+            type: 'line',
+        }];
+
+        const tooltip = {
+            trigger: 'axis',
+            axisPointer: {},
+            formatter: null,
+            valueFormatter: (value) => {
+                if (value === null || value === undefined) {
+                    return '-';
+                }
+                return value.toFixed(2) + ' points';
+            }
+        };
+
+        createChart(title, legend, xAxis, yAxis, series, tooltip);
+    });
 }
 
 // --- Main Handler Function ---
@@ -525,19 +688,6 @@ function handleVizButtonClick(buttonText) {
             renderParticipantsTrend();
             break;
 
-        case 'Event Trends Over Time':
-            renderEventTrendsOverTime();
-            break;
-
-        // Assuming 'CLICK ME' is now 'Tier Distribution' or similar
-        case 'Tier Distribution':
-            renderTierDistribution();
-            break;
-
-        case 'Geographic Distribution':
-            renderGeographicDistribution();
-            break;
-
         case 'Prize Money Analysis':
             renderPrizeMoneyAnalysis();
             break;
@@ -546,8 +696,8 @@ function handleVizButtonClick(buttonText) {
             renderAverageRatings();
             break;
 
-        case 'Course Difficulty':
-            renderCourseDifficulty();
+        case 'Difference in Rating':
+            renderDiffRating();
             break;
 
         default:
@@ -580,7 +730,6 @@ function renderSelectedVizButton() {
 
     if (initialActiveButton) {
         const initialButtonText = initialActiveButton.textContent.trim();
-        console.log(`Running initial visualization: ${initialButtonText}`);
         handleVizButtonClick(initialButtonText);
     } else if (vizButtons.length > 0) {
         // If no button has 'active' set in HTML, activate the first one by default
@@ -591,34 +740,6 @@ function renderSelectedVizButton() {
     }
 }
 
-
-// --------------------------------------------------------------------------------------------------------------------------
-//
-//                                               CODES FOR QUERY TESTING
-//
-// --------------------------------------------------------------------------------------------------------------------------
-
-// Using fetch API
-async function getDataFromDatabase() {
-    try {
-        const response = await fetch('https://coderelic.greenriverdev.com/query.php?action=countAllPlayers');
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
-}
-
-// Call the function
-
-
-let button1 = document.getElementById("button1");
-button1.addEventListener("click", function () {
-    getDataFromDatabase().then(data => {
-        alert("Total Players: " + data[0]["Total Players"]);
-    })
-});
-
 // --------------------------------------------------------------------------------------------------------------------------
 //
 //                                               CODES FOR ECHART CREATION 
@@ -628,6 +749,8 @@ button1.addEventListener("click", function () {
 function createChart(title, legend, xAxis, yAxis, series, tooltip) {
     // Initialize the echarts instance based on the prepared dom
     var myChart = echarts.init(document.getElementById('viz'));
+
+    myChart.clear();
 
     // Specify the configuration items and data for the chart
     var option = {
