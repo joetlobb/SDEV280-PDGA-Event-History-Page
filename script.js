@@ -1,5 +1,6 @@
-let continualId = 1;
 let allData = [];
+let selectedEvent;
+let continualId;
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
@@ -24,16 +25,31 @@ async function getAllRecentEventsContinualList() {
 
 (async function onPageLoad() {
     let data = await getAllRecentEventsContinualList();
-    console.log(data)
     allData = data;
     renderTable()
 })();
 
 // --------------------------------------------------------------------------------------------------------------------------
-// Pagination
+//
+//                                               FUNCTION AFTER EVENT SELECTED 
+//
+// --------------------------------------------------------------------------------------------------------------------------
+
+function renderEvent() {
+    processFilterEvent();
+    renderSelectedVizButton();
+    document.getElementById('visualization-section').style.display = 'block';
+    document.getElementById('event-name').textContent = selectedEvent.event_name;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               PAGINATION EVENT LISTS 
+//
+// --------------------------------------------------------------------------------------------------------------------------
 
 let currentPage = 1;
-let pageSize = 5;
+let pageSize = 10;
 
 function renderTable() {
     const tableBody = document.getElementById('tableBody');
@@ -50,47 +66,62 @@ function renderTable() {
         switch (item.tier) {
             case 'M':
                 item.tierCode = 'tier-m'
+                item.tier = 'Major'
                 break;
             case 'NT':
                 item.tierCode = 'tier-es'
-                item.tier = 'ES'
+                item.tier = 'Elite'
                 break;
             case 'A':
                 item.tierCode = 'tier-a'
+                item.tier = 'Tier-A'
                 break;
             case 'B':
                 item.tierCode = 'tier-b'
+                item.tier = 'Tier-B'
                 break;
             case 'C':
                 item.tierCode = 'tier-c'
+                item.tier = 'Tier-C'
                 break;
             case 'XA':
                 item.tierCode = 'tier-xa'
+                item.tier = 'Tier-XA'
                 break;
             case 'XB':
                 item.tierCode = 'tier-xb'
+                item.tier = 'Tier-XB'
                 break;
             case 'XC':
                 item.tierCode = 'tier-xc'
+                item.tier = 'Tier-XC'
                 break;
             case 'XM':
                 item.tierCode = 'tier-xm'
+                item.tier = 'Tier-XM'
                 break;
             default:
                 break;
         }
 
-        const row = `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.start_date}</td>
-                        <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
-                        <td>${item.city}</td>
-                        <td>${item.state}</td>
-                        <td>${item.country}</td>
-                    </tr>
-                `;
-        tableBody.innerHTML += row;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.start_date}</td>
+            <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
+            <td>${item.city}</td>
+            <td>${item.state}</td>
+            <td>${item.country}</td>
+        `;
+
+        row.addEventListener('click', () => {
+            selectedEvent = item;
+            continualId = item.id;
+            renderEvent();
+        });
+
+        tableBody.appendChild(row);
+
     }
 
     const rowsToFill = pageSize - (endIndex - startIndex);
@@ -172,6 +203,8 @@ document.getElementById('lastBtn').addEventListener('click', () => {
     renderTable();
 });
 
+
+
 // Initial render
 renderTable();
 
@@ -247,12 +280,12 @@ function sortDivisions(divisions) {
 }
 
 async function processFilterEvent() {
-    const years = await getContinualEventYears(1);
+    const years = await getContinualEventYears(continualId);
     const yearList = years.map(item => item.year);
     const yearNumbers = years.map(item => parseInt(item.year));
     addYearList(yearNumbers);
 
-    const eventDivisions = await getContinualEventsDivisions(1);
+    const eventDivisions = await getContinualEventsDivisions(continualId);
     const allDivisions = eventDivisions.flatMap(event => event.divisions);
     const uniqueDivisions = [...new Set(allDivisions)];
     const sortedDivisions = sortDivisions(uniqueDivisions)
@@ -267,6 +300,11 @@ processFilterEvent();
 function addYearList(availableYears) {
     availableYears.reverse();
     const yearSelect = document.getElementById('year');
+    yearSelect.innerHTML = '';
+    const newOption = document.createElement('option');
+    newOption.textContent = 'All Years';
+    newOption.value = 'All Years';
+    yearSelect.appendChild(newOption);
     availableYears.forEach(year => {
         const newOption = document.createElement('option');
         newOption.textContent = year;
@@ -278,6 +316,11 @@ function addYearList(availableYears) {
 // Add list of divisions in that continual event to the filter option
 function addDivisionList(divisions) {
     const divisionSelect = document.getElementById('division');
+    divisionSelect.innerHTML = '';
+    const newOption = document.createElement('option');
+    newOption.textContent = 'All Divisions';
+    newOption.value = 'All Divisions';
+    divisionSelect.appendChild(newOption);
     divisions.forEach(division => {
         const newOption = document.createElement('option');
         newOption.textContent = division;
@@ -530,10 +573,9 @@ document.addEventListener('DOMContentLoaded', function () {
             handleVizButtonClick(buttonText);
         });
     });
+});
 
-
-    // 2. Initial Page Load Logic (To render the first chart)
-    // Find the button that is already marked 'active' in the HTML and run its handler.
+function renderSelectedVizButton() {
     const initialActiveButton = document.querySelector('.viz-button.active');
 
     if (initialActiveButton) {
@@ -547,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(`No active button found. Defaulting to: ${firstButton.textContent.trim()}`);
         handleVizButtonClick(firstButton.textContent.trim());
     }
-});
+}
 
 
 // --------------------------------------------------------------------------------------------------------------------------
