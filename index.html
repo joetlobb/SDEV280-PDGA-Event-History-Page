@@ -14,11 +14,11 @@
     <!-- Header -->
     <header>
         <div class="header-content">
-            <div class="logo">
+            <a href="index.html" class="logo">
                 <img src="./assets/logo.png" alt="pdga_logo">
-            </div>
+            </a>
             <nav>
-                <a href="#" class="active">Events</a>
+                <a href="index.html" class="active">Events</a>
                 <a href="#">Players</a>
                 <a href="#">About</a>
                 <div class="event-search">
@@ -102,15 +102,67 @@
 
         <!-- Visualization Section -->
         <div class="visualization-section" id="visualization-section">
-            <h2 id="event-name">Data Visualization</h2>
-            <div class="viz-options">
-                <button class="viz-button active">Participants Trend</button>
-                <button class="viz-button">Prize Money Analysis</button>
-                <button class="viz-button">Average Ratings</button>
-                <button class="viz-button">Difference in Rating</button>
+            <!-- Event Header Card -->
+            <div class="event-header-card">
+                <div class="event-header-left">
+                    <h1 class="event-title" id="event-name">Event Name</h1>
+                    <div class="event-meta">
+                        <span class="event-dates" id="event-dates">
+                            Date
+                        </span>
+                        <span class="event-tier-badge" id="event-tier">
+                            <span class="tier-badge tier-a">A-Tier</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="event-header-right">
+                    <a href="#" class="event-website-btn" id="event-website" target="_blank">
+                        Visit Website
+                    </a>
+                </div>
             </div>
-            <div class="chart-container" id="viz">
-                [Interactive Chart Visualization Area]
+
+            <!-- Event Details -->
+            <div class="event-details">
+                <div class="event-detail-card">
+                    <div class="detail-content">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">
+                            <span id="event-city">City</span>,&nbsp;
+                            <span id="event-state">State</span>
+                        </div>
+                        <div class="detail-subtext" id="event-country">Country</div>
+                    </div>
+                </div>
+
+                <div class="event-detail-card">
+                    <div class="detail-content">
+                        <div class="detail-label ">Tournament Director</div>
+                        <div class="detail-value event-director" id="event-director">Director Name</div>
+                    </div>
+                </div>
+
+                <div class="event-detail-card">
+                    <div class="detail-content">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge status-completed">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="chart-section">
+                <div class="viz-options">
+                    <button class="viz-button active">Participants Trend</button>
+                    <button class="viz-button">Prize Money Analysis</button>
+                    <button class="viz-button">Average Ratings</button>
+                    <button class="viz-button">Difference in Rating</button>
+                </div>
+                <div class="chart-container" id="viz">
+                    [Interactive Chart Visualization Area]
+                </div>
             </div>
         </div>
 

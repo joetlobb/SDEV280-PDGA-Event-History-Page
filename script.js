@@ -40,6 +40,76 @@ function renderEvent() {
     renderSelectedVizButton();
     document.getElementById('visualization-section').style.display = 'block';
     document.getElementById('event-name').textContent = selectedEvent.event_name;
+    document.getElementById('event-dates').textContent = 'Date ' + selectedEvent.start_date;
+    const tierBadge = getTierBadge(selectedEvent.tier);
+    document.getElementById('event-tier').innerHTML = tierBadge;
+    const websiteLink = document.getElementById('event-website');
+    if (selectedEvent.website_url) {
+        websiteLink.href = selectedEvent.website_url;
+        websiteLink.style.display = 'flex';
+    } else {
+        websiteLink.style.display = 'none';
+    }
+    document.getElementById('event-city').textContent = selectedEvent.city;
+    document.getElementById('event-state').textContent = selectedEvent.state;
+    document.getElementById('event-country').textContent = selectedEvent.country;
+    document.getElementById('event-director').textContent = selectedEvent.tournament_director || 'N/A';
+
+    const targetElement = document.getElementById('visualization-section');
+
+    if (targetElement) {
+        targetElement.scrollIntoView({
+            behavior: 'smooth', // For a smooth animated scroll
+            block: 'start'      // Aligns the top of the element to the top of the viewport
+        });
+    }
+}
+
+function getTierBadge(tier) {
+    let tierLabel = tier;
+
+    switch (tier) {
+        case 'Major':
+            tierClass = 'tier-m'
+            tierLabel = 'Major';
+            break;
+        case 'Elite':
+            tierClass = 'tier-es'
+            tierLabel = 'Elite Series';
+            break;
+        case 'Tier-A':
+            tierClass = 'tier-a'
+            tierLabel = 'A-Tier';
+            break;
+        case 'Tier-B':
+            tierClass = 'tier-b'
+            tierLabel = 'B-Tier';
+            break;
+        case 'Tier-C':
+            tierClass = 'tier-c'
+            tierLabel = 'C-Tier';
+            break;
+        case 'Tier-XA':
+            tierClass = 'tier-xa'
+            tierLabel = 'XA-Tier';
+            break;
+        case 'Tier-XB':
+            tierClass = 'tier-xb'
+            tierLabel = 'XB-Tier';
+            break;
+        case 'Tier-XC':
+            tierClass = 'tier-xc'
+            tierLabel = 'XC-Tier';
+            break;
+        case 'Tier-XM':
+            tierClass = 'tier-xm'
+            tierLabel = 'XM-Tier';
+            break;
+        default:
+            tierLabel = tier || 'Unknown';
+    }
+
+    return `<span class="tier-badge ${tierClass}">${tierLabel}</span>`;
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
