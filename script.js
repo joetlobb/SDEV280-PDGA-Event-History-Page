@@ -1,3 +1,5 @@
+import { getTotalPlayers, getTotalEvents, getAvgPlayersPerEvent, getTotalPrize, updateStatCards } from './queries.js'
+
 let allData = [];
 let selectedEvent;
 let continualId;
@@ -24,6 +26,21 @@ async function getAllRecentEventsContinualList() {
 }
 
 (async function onPageLoad() {
+    const statData = {};
+
+    const [playersData, eventsData, avgPlayersData, prizeData] = await Promise.all([
+        getTotalPlayers(),
+        getTotalEvents(),
+        getAvgPlayersPerEvent(),
+        getTotalPrize()
+    ]);
+
+    statData.total_players = (playersData?.[0] || {})['all_players_count'];
+    statData.total_events = (eventsData?.[0] || {})['total_events'];
+    statData.avg_players_per_event = +(avgPlayersData?.[0] || {})['avg_players_count'];
+    statData.total_prize = (prizeData?.[0] || {})['total_prize'];
+    updateStatCards(statData);
+
     let data = await getAllRecentEventsContinualList();
     allData = data;
     renderTable()
@@ -66,6 +83,7 @@ function renderEvent() {
 }
 
 function getTierBadge(tier) {
+    let tierClass = '';
     let tierLabel = tier;
 
     switch (tier) {
