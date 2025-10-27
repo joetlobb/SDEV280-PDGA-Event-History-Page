@@ -10,7 +10,7 @@ let continualId;
 
 async function getAllRecentEventsContinualList() {
     try {
-        const url = `https://coderelic.greenriverdev.com/query2.php?queryType=getAllRecentEventsContinualList`;
+        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getAllRecentEventsContinualList`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -443,7 +443,6 @@ async function getContinualEventsDiffRating(continualId) {
 // These functions will contain the actual ECharts rendering logic.
 function renderParticipantsTrend() {
     getContinualEventsParticipants(continualId).then(data => {
-        console.log(data)
         const title = {
             text: "Participants Trend " + data[0].year + " - " + data[data.length - 1].year
         };
