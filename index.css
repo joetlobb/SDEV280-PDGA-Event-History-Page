@@ -261,14 +261,17 @@ nav a:hover {
     justify-content: space-between;
     gap: 20px;
     margin-bottom: 30px;
+    margin-left: 100px;
+    margin-right: 100px;
 }
 
 .event-detail-card {
     flex: 1;
     background: white;
     padding: 20px;
-    border-radius: 10px;
-    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #0066cc;
 }
 
 .event-detail-card:hover {
@@ -316,7 +319,7 @@ nav a:hover {
     display: inline-block;
     padding: 4px 10px;
     border-radius: 4px;
-    font-size: 22px;
+    font-size: 18px;
     margin-top: 5px;
 }
 
