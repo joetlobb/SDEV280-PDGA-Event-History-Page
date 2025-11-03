@@ -161,6 +161,21 @@ export async function getTotalPrize() {
 //     "$" + Math.round(statData["total_prize"] / 1000000, 1) + "M";
 // }
 
+export async function getRecurringEventCountOnContinualEvent(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getRecurringEventCountOnContinualEvent&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
 export async function getPlayerCountOnContinualEvent(continualId) {
   try {
     const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getPlayerCountOnContinualEvent&continualId=${continualId}`;
