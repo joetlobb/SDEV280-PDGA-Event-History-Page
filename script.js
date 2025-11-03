@@ -5,7 +5,7 @@ import {
   getContinualEventsAverageRatingByDivision,
   getContinualEventsDiffRating,
 } from "./functions/queries.js";
-import { updateStatCards, updateEventDateRange } from "./functions/domHandler.js";
+import { updateStatCards, updateEventDateRange, updatePastEventsList } from "./functions/domHandler.js";
 
 let allData = [];
 let selectedEvent;
@@ -53,6 +53,9 @@ function renderEvent() {
   document.getElementById("event-director").textContent =
     selectedEvent.tournament_director || "N/A";
 
+  updatePastEventsList(continualId);
+
+  // Smooth scroll to the event section
   const targetElement = document.getElementById("event-section");
 
   if (targetElement) {

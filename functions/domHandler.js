@@ -1,4 +1,8 @@
-import { getRecurringEventCountOnContinualEvent, getPlayerCountOnContinualEvent, getAvgPlayerCountOnContinualEvent, getTotalPrizeOnContinualEvent, getEventDateRange } from "./queries.js";
+import {
+  getRecurringEventCountOnContinualEvent,
+  getPlayerCountOnContinualEvent, getAvgPlayerCountOnContinualEvent,
+  getTotalPrizeOnContinualEvent, getEventDateRange, getPastEvents, getPlayersByPdgaNumbers
+} from "./queries.js";
 
 export async function updateStatCards(id) {
   const statData = {};
@@ -34,7 +38,30 @@ export async function updateEventDateRange(id) {
   if (dateData && dateData.length > 0) {
     const start_year = dateData[0]['start_year'];
     const end_year = dateData[0]['end_year'];
-  
+
     document.getElementById('event-dates').textContent = `${start_year} - ${end_year}`;
   }
 }
+
+// Update Past Events List with Player Names
+export async function updatePastEventsList(id) {
+  const pastEvents = await getPastEvents(id);
+
+  const pdgaNumbers = [];
+
+  pastEvents.forEach(event => {
+    pdgaNumbers.push(event.pdga_number);
+  })
+
+  const playersData = await getPlayersByPdgaNumbers(pdgaNumbers);
+
+  pastEvents.forEach(event => {
+    const player = playersData.find(p => String(p.pdga_number) === String(event.pdga_number));
+    event.player_name = player ? `${player.first_name} ${player.last_name}` : "N/A";
+  });
+
+  console.log(pastEvents);
+}
+
+// Update Table Headers for Past Events
+// Render Past Events Table

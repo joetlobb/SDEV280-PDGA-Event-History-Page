@@ -164,3 +164,33 @@ export async function getEventDateRange(continualId) {
     console.error("Error:", error);
   }
 }
+
+export async function getPastEvents(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getPastEvents&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+export async function getPlayersByPdgaNumbers(pdgaNumbers) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getPlayersByPdgaNumbers&pdgaNumbers=${pdgaNumbers}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
