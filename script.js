@@ -70,7 +70,7 @@ function getTierBadge(tier) {
   switch (tier) {
     case "Major":
       tierClass = "tier-m";
-      tierLabel = "Major";
+      tierLabel = "PDGA Major";
       break;
     case "Elite":
       tierClass = "tier-es";

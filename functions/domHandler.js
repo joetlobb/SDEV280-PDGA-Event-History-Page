@@ -32,10 +32,9 @@ export async function updateStatCards(id) {
 export async function updateEventDateRange(id) {
   const dateData = await getEventDateRange(id);
   if (dateData && dateData.length > 0) {
-    console.log(dateData)
     const start_year = dateData[0]['start_year'];
     const end_year = dateData[0]['end_year'];
-    
+  
     document.getElementById('event-dates').textContent = `${start_year} - ${end_year}`;
   }
 }
