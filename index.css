@@ -195,9 +195,9 @@ nav a:hover {
     color: #999;
 }
 
-/* Visualization Section */
-.visualization-section {
-    display: none;
+/* Event Section */
+.event-section {
+    /* display: none; */
 }
 
 /* Event Header Card */

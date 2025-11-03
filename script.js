@@ -55,7 +55,7 @@ async function getAllRecentEventsContinualList() {
 function renderEvent() {
     processFilterEvent();
     renderSelectedVizButton();
-    document.getElementById('visualization-section').style.display = 'block';
+    document.getElementById('event-section').style.display = 'block';
     document.getElementById('event-name').textContent = selectedEvent.event_name;
     document.getElementById('event-dates').textContent = 'Date ' + selectedEvent.start_date;
     const tierBadge = getTierBadge(selectedEvent.tier);
@@ -72,7 +72,7 @@ function renderEvent() {
     document.getElementById('event-country').textContent = selectedEvent.country;
     document.getElementById('event-director').textContent = selectedEvent.tournament_director || 'N/A';
 
-    const targetElement = document.getElementById('visualization-section');
+    const targetElement = document.getElementById('event-section');
 
     if (targetElement) {
         targetElement.scrollIntoView({
