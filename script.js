@@ -3,6 +3,7 @@ import {
   // getTotalEvents,
   // getAvgPlayersPerEvent,
   // getTotalPrize,
+  getAllRecentEventsContinualList,
   getContinualEventsParticipants,
   getContinualEventsWithPrizes,
   getContinualEventsAverageRatingByDivision,
@@ -19,21 +20,6 @@ let continualId;
 //                                               CODES FOR INITIAL LOAD UP
 //
 // --------------------------------------------------------------------------------------------------------------------------
-
-async function getAllRecentEventsContinualList() {
-  try {
-    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getAllRecentEventsContinualList`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
 
 (async function onPageLoad() {
   //   const statData = {};

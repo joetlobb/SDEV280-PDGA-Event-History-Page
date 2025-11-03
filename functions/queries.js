@@ -1,3 +1,19 @@
+// Get all recent events to display in recent events table
+export async function getAllRecentEventsContinualList() {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getAllRecentEventsContinualList`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
 // --------------------------------------------------------------------------------------------------------------------------
 //
 //                                               VISUALIZATION SECTION QUERIES
