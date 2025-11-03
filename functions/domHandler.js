@@ -1,4 +1,4 @@
-import { getPlayerCountOnContinualEvent } from "../queries.js";
+import { getPlayerCountOnContinualEvent } from "./queries.js";
 
 export async function updateStatCards(id) {
   let data = await getPlayerCountOnContinualEvent(id);
