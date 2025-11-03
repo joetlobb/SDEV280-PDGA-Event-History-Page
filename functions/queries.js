@@ -190,3 +190,18 @@ export async function getPlayerCountOnContinualEvent(continualId) {
     console.error("Error:", error);
   }
 }
+
+export async function getAvgPlayerCountOnContinualEvent(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getAvgPlayerCountOnContinualEvent&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
