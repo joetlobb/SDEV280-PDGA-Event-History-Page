@@ -1,15 +1,11 @@
 import {
-  // getTotalPlayers,
-  // getTotalEvents,
-  // getAvgPlayersPerEvent,
-  // getTotalPrize,
   getAllRecentEventsContinualList,
   getContinualEventsParticipants,
   getContinualEventsWithPrizes,
   getContinualEventsAverageRatingByDivision,
   getContinualEventsDiffRating,
 } from "./functions/queries.js";
-import { updateStatCards } from "./functions/domHandler.js";
+import { updateStatCards, updateEventDateRange } from "./functions/domHandler.js";
 
 let allData = [];
 let selectedEvent;
@@ -22,24 +18,6 @@ let continualId;
 // --------------------------------------------------------------------------------------------------------------------------
 
 (async function onPageLoad() {
-  //   const statData = {};
-
-  //   const [playersData, eventsData, avgPlayersData, prizeData] =
-  //     await Promise.all([
-  //       getTotalPlayers(),
-  //       getTotalEvents(),
-  //       getAvgPlayersPerEvent(),
-  //       getTotalPrize(),
-  //     ]);
-
-  //   statData.total_players = (playersData?.[0] || {})["all_players_count"];
-  //   statData.total_events = (eventsData?.[0] || {})["total_events"];
-  //   statData.avg_players_per_event = +(avgPlayersData?.[0] || {})[
-  //     "avg_players_count"
-  //   ];
-  //   statData.total_prize = (prizeData?.[0] || {})["total_prize"];
-  //   updateStatCards();
-
   let data = await getAllRecentEventsContinualList();
   allData = data;
   renderTable();
@@ -53,6 +31,7 @@ let continualId;
 
 function renderEvent() {
   processFilterEvent();
+  updateEventDateRange(continualId);
   updateStatCards(continualId);
   renderSelectedVizButton();
   document.getElementById("event-section").style.display = "block";

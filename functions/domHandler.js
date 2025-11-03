@@ -1,4 +1,4 @@
-import { getRecurringEventCountOnContinualEvent, getPlayerCountOnContinualEvent, getAvgPlayerCountOnContinualEvent, getTotalPrizeOnContinualEvent } from "./queries.js";
+import { getRecurringEventCountOnContinualEvent, getPlayerCountOnContinualEvent, getAvgPlayerCountOnContinualEvent, getTotalPrizeOnContinualEvent, getEventDateRange } from "./queries.js";
 
 export async function updateStatCards(id) {
   const statData = {};
@@ -18,7 +18,7 @@ export async function updateStatCards(id) {
   statData.total_prize = +(prizeData?.[0] || {})["total_prize"];
 
   document.getElementById('stat-total-events').textContent = statData['events_count'].toLocaleString();
-  document.getElementById('stat-detail-total-event').textContent = `Since ${statData['start_year']}`;
+  document.getElementById('stat-detail-total-event').textContent = `Running Since ${statData['start_year']}`;
   document.getElementById('stat-total-players').textContent = statData['players_count'].toLocaleString();
   document.getElementById('stat-avg-players').textContent = statData['avg_players_count'].toLocaleString();
 
@@ -26,5 +26,16 @@ export async function updateStatCards(id) {
     document.getElementById('stat-total-prize').textContent = '$' + (statData['total_prize'] / 1000000).toFixed(1) + 'M';
   } else {
     document.getElementById('stat-total-prize').textContent = '$' + statData['total_prize'].toLocaleString();
+  }
+}
+
+export async function updateEventDateRange(id) {
+  const dateData = await getEventDateRange(id);
+  if (dateData && dateData.length > 0) {
+    console.log(dateData)
+    const start_year = dateData[0]['start_year'];
+    const end_year = dateData[0]['end_year'];
+    
+    document.getElementById('event-dates').textContent = `${start_year} - ${end_year}`;
   }
 }
