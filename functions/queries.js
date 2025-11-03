@@ -1,3 +1,79 @@
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               VISUALIZATION SECTION QUERIES
+//
+// --------------------------------------------------------------------------------------------------------------------------
+export async function getContinualEventsParticipants(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsParticipants&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+export async function getContinualEventsWithPrizes(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsWithPrizes&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+    return [];
+  }
+}
+
+export async function getContinualEventsAverageRatingByDivision(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsAverageRatingByDivision&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+    return [];
+  }
+}
+
+//difference in rating visulization
+export async function getContinualEventsDiffRating(continualId) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/diffRatingQuery.php?queryType=getContinualEventsDiffRating&continualId=${continualId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching rating difference data:", error);
+    return [];
+  }
+}
+
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               ALL EVENTS STATS QUERIES
+//
+// --------------------------------------------------------------------------------------------------------------------------
+
 export async function getTotalEvents() {
   try {
     const url = `https://coderelic.greenriverdev.com/query.php?queryType=getTotalEvents`;
