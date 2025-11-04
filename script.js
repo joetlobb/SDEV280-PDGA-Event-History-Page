@@ -4,6 +4,8 @@ import {
   getContinualEventsWithPrizes,
   getContinualEventsAverageRatingByDivision,
   getContinualEventsDiffRating,
+  getAllEventsID,
+  getAllEventsDetails,
 } from "./functions/queries.js";
 import {
   clearTable, createClickableRow,
@@ -29,9 +31,36 @@ let continualId;
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-(async function onPageLoad() {
-  let data = await getAllRecentEventsContinualList();
-  allData = data;
+(async function processAllEventsData() {
+  const allEventsId = await getAllEventsID();
+  const allEventsDetails = await getAllEventsDetails();
+  const allEventsData = [];
+  allEventsDetails.forEach(event => {
+    const newId = allEventsId.find(e => e.pdga_event_id === event.pdga_event_id)?.id || null;
+    const newName = allEventsId.find(e => e.pdga_event_id === event.pdga_event_id)?.name || null;
+    allEventsData.push({
+      ...event,
+      id: newId,
+      name: newName
+    });
+  });
+
+  const latestEventsMap = allEventsData.reduce((accumulator, currentEvent) => {
+    const currentId = currentEvent.id;
+    if (!accumulator[currentId] || currentEvent.year > accumulator[currentId].year) {
+      accumulator[currentId] = currentEvent;
+    }
+    return accumulator;
+  }, {});
+  const latestEventsArray = Object.values(latestEventsMap);
+
+  const sortedLatestEvents = latestEventsArray.sort((a, b) => {
+    const dateA = new Date(a.start_date);
+    const dateB = new Date(b.start_date);
+    return dateB - dateA;
+  });
+
+  allData = sortedLatestEvents;
   initPagination(allData, renderTable);
 })();
 

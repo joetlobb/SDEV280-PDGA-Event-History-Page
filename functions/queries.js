@@ -194,3 +194,33 @@ export async function getPlayersByPdgaNumbers(pdgaNumbers) {
     console.error("Error:", error);
   }
 }
+
+export async function getAllEventsID() {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getAllEventsID`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+export async function getAllEventsDetails() {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getAllEventsDetails`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
