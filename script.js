@@ -5,7 +5,19 @@ import {
   getContinualEventsAverageRatingByDivision,
   getContinualEventsDiffRating,
 } from "./functions/queries.js";
-import { updateStatCards, updateEventDateRange, updatePastEventsList } from "./functions/domHandler.js";
+import {
+  clearTable, createClickableRow,
+  fillEmptyRows, updateStatCards,
+  updateEventDateRange, updatePastEventsList
+} from "./functions/domHandler.js";
+import {
+  initPagination,
+  getPaginationInfo,
+  getCurrentPageData,
+  updatePaginationInfo,
+  updatePaginationControls
+} from "./functions/pagination.js";
+import { processTierData } from "./functions/functions.js";
 
 let allData = [];
 let selectedEvent;
@@ -20,7 +32,7 @@ let continualId;
 (async function onPageLoad() {
   let data = await getAllRecentEventsContinualList();
   allData = data;
-  renderTable();
+  initPagination(allData, renderTable);
 })();
 
 // --------------------------------------------------------------------------------------------------------------------------
@@ -116,166 +128,47 @@ function getTierBadge(tier) {
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
-//                                               PAGINATION EVENT LISTS
+//                                               RENDER TABLE
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-let currentPage = 1;
-let pageSize = 10;
-
 function renderTable() {
   const tableBody = document.getElementById("tableBody");
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, allData.length);
+  const { data: pageData } = getCurrentPageData();
+  const { pageSize } = getPaginationInfo();
 
-  // Clear existing rows
-  tableBody.innerHTML = "";
+  // Clear table
+  clearTable("tableBody");
 
-  // Add rows for current page
-  for (let i = startIndex; i < endIndex; i++) {
-    const item = allData[i];
+  // Add data rows
+  pageData.forEach((item) => {
+    item = processTierData(item);
 
-    switch (item.tier) {
-      case "M":
-        item.tierCode = "tier-m";
-        item.tier = "Major";
-        break;
-      case "NT":
-        item.tierCode = "tier-es";
-        item.tier = "Elite";
-        break;
-      case "A":
-        item.tierCode = "tier-a";
-        item.tier = "Tier-A";
-        break;
-      case "B":
-        item.tierCode = "tier-b";
-        item.tier = "Tier-B";
-        break;
-      case "C":
-        item.tierCode = "tier-c";
-        item.tier = "Tier-C";
-        break;
-      case "XA":
-        item.tierCode = "tier-xa";
-        item.tier = "Tier-XA";
-        break;
-      case "XB":
-        item.tierCode = "tier-xb";
-        item.tier = "Tier-XB";
-        break;
-      case "XC":
-        item.tierCode = "tier-xc";
-        item.tier = "Tier-XC";
-        break;
-      case "XM":
-        item.tierCode = "tier-xm";
-        item.tier = "Tier-XM";
-        break;
-      default:
-        break;
-    }
+    const rowContent = `
+      <td>${item.name}</td>
+      <td>${item.start_date}</td>
+      <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
+      <td>${item.city}</td>
+      <td>${item.state}</td>
+      <td>${item.country}</td>
+    `;
 
-    const row = document.createElement("tr");
-    row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.start_date}</td>
-            <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
-            <td>${item.city}</td>
-            <td>${item.state}</td>
-            <td>${item.country}</td>
-        `;
-
-    row.addEventListener("click", () => {
+    const row = createClickableRow(rowContent, () => {
       selectedEvent = item;
       continualId = item.id;
       renderEvent();
     });
 
     tableBody.appendChild(row);
-  }
+  });
 
-  const rowsToFill = pageSize - (endIndex - startIndex);
-  for (let i = 0; i < rowsToFill; i++) {
-    const emptyRow = document.createElement("tr");
-    emptyRow.className = "empty-row";
-    emptyRow.innerHTML = `
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-    `;
-    tableBody.appendChild(emptyRow);
-  }
+  // Fill empty rows
+  fillEmptyRows(tableBody, pageData.length, pageSize, 6);
 
+  // Update pagination UI
   updatePaginationInfo();
   updatePaginationControls();
 }
-
-function updatePaginationInfo() {
-  const startEntry = (currentPage - 1) * pageSize + 1;
-  const endEntry = Math.min(currentPage * pageSize, allData.length);
-
-  document.getElementById("startEntry").textContent = startEntry;
-  document.getElementById("endEntry").textContent = endEntry;
-  document.getElementById("totalEntries").textContent = allData.length;
-}
-
-function updatePaginationControls() {
-  const totalPages = Math.ceil(allData.length / pageSize);
-
-  // Update button states
-  document.getElementById("firstBtn").disabled = currentPage === 1;
-  document.getElementById("prevBtn").disabled = currentPage === 1;
-  document.getElementById("nextBtn").disabled = currentPage === totalPages;
-  document.getElementById("lastBtn").disabled = currentPage === totalPages;
-
-  // Generate page numbers
-  const pageNumbersDiv = document.getElementById("pageNumbers");
-  pageNumbersDiv.innerHTML = "";
-
-  for (let i = 1; i <= totalPages; i++) {
-    const pageBtn = document.createElement("button");
-    pageBtn.className = "pagination-btn" + (i === currentPage ? " active" : "");
-    pageBtn.textContent = i;
-    pageBtn.onclick = () => {
-      currentPage = i;
-      renderTable();
-    };
-    pageNumbersDiv.appendChild(pageBtn);
-  }
-}
-
-// Event listeners
-document.getElementById("firstBtn").addEventListener("click", () => {
-  currentPage = 1;
-  renderTable();
-});
-
-document.getElementById("prevBtn").addEventListener("click", () => {
-  if (currentPage > 1) {
-    currentPage--;
-    renderTable();
-  }
-});
-
-document.getElementById("nextBtn").addEventListener("click", () => {
-  const totalPages = Math.ceil(allData.length / pageSize);
-  if (currentPage < totalPages) {
-    currentPage++;
-    renderTable();
-  }
-});
-
-document.getElementById("lastBtn").addEventListener("click", () => {
-  currentPage = Math.ceil(allData.length / pageSize);
-  renderTable();
-});
-
-// Initial render
-renderTable();
 
 // --------------------------------------------------------------------------------------------------------------------------
 //

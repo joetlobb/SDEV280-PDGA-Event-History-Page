@@ -4,6 +4,38 @@ import {
   getTotalPrizeOnContinualEvent, getEventDateRange, getPastEvents, getPlayersByPdgaNumbers
 } from "./queries.js";
 
+export function clearTable(tableBodyId) {
+  const tableBody = document.getElementById(tableBodyId);
+  if (tableBody) {
+    tableBody.innerHTML = "";
+  }
+}
+
+export function createClickableRow(content, clickHandler) {
+  const row = document.createElement("tr");
+  row.innerHTML = content;
+  row.addEventListener("click", clickHandler);
+  return row;
+}
+
+export function fillEmptyRows(tableBody, currentRowCount, pageSize, columnCount) {
+  const rowsToFill = pageSize - currentRowCount;
+  
+  for (let i = 0; i < rowsToFill; i++) {
+    const emptyRow = document.createElement("tr");
+    emptyRow.className = "empty-row";
+    emptyRow.innerHTML = `
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    `;    
+    tableBody.appendChild(emptyRow);
+  }
+}
+
 export async function updateStatCards(id) {
   const statData = {};
 
