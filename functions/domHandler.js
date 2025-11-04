@@ -4,10 +4,9 @@ import {
   getTotalPrizeOnContinualEvent, getEventDateRange, getPastEvents, getPlayersByPdgaNumbers
 } from "./queries.js";
 
-export function clearTable(tableBodyId) {
-  const tableBody = document.getElementById(tableBodyId);
-  if (tableBody) {
-    tableBody.innerHTML = "";
+export function clearTable(element) {
+  if (element) {
+    element.innerHTML = "";
   }
 }
 
@@ -20,18 +19,11 @@ export function createClickableRow(content, clickHandler) {
 
 export function fillEmptyRows(tableBody, currentRowCount, pageSize, columnCount) {
   const rowsToFill = pageSize - currentRowCount;
-  
+
   for (let i = 0; i < rowsToFill; i++) {
     const emptyRow = document.createElement("tr");
     emptyRow.className = "empty-row";
-    emptyRow.innerHTML = `
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    `;    
+    emptyRow.innerHTML = '<td>&nbsp;</td>'.repeat(columnCount);
     tableBody.appendChild(emptyRow);
   }
 }
@@ -93,7 +85,50 @@ export async function updatePastEventsList(id) {
   });
 
   console.log(pastEvents);
+  updatePastEventsTableHeaders();
+  return pastEvents;
 }
 
 // Update Table Headers for Past Events
+export function updatePastEventsTableHeaders() {
+  document.getElementById("tableName").textContent = "Past Events";
+
+  const tableHead = document.getElementById("tableHead");
+  clearTable(tableHead);
+  const headerRow = document.createElement("tr");
+  headerRow.innerHTML = `
+      <th>Event Name</th>
+      <th>Date</th>
+      <th>Division</th>
+      <th>Winner</th>
+    `;
+  tableHead.appendChild(headerRow);
+}
+
+export function renderPastEventsTable(pastEvents) {
+  const tableBody = document.getElementById("tableBody");
+  clearTable(tableBody);
+
+  pastEvents.forEach((event) => {
+    const rowContent = `
+      <td>${event.event_name}</td>
+      <td>${event.start_date}</td>
+      <td>${event.division}</td>
+      <td>${event.player_name}</td>
+    `;
+
+    const row = createClickableRow(rowContent, () => {
+      const webSiteLink = event.website_url;
+      window.open(webSiteLink, '_blank');
+    });
+
+    tableBody.appendChild(row);
+  });
+
+  fillEmptyRows(tableBody, pageData.length, pageSize, 4);
+
+  // Update pagination UI
+  updatePaginationInfo();
+  updatePaginationControls();
+}
 // Render Past Events Table

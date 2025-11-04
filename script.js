@@ -6,20 +6,26 @@ import {
   getContinualEventsDiffRating,
 } from "./functions/queries.js";
 import {
-  clearTable, createClickableRow,
-  fillEmptyRows, updateStatCards,
-  updateEventDateRange, updatePastEventsList
+  clearTable,
+  createClickableRow,
+  fillEmptyRows,
+  updateStatCards,
+  updateEventDateRange,
+  updatePastEventsList,
+  updatePastEventsTableHeaders,
+  renderPastEventsTable,
 } from "./functions/domHandler.js";
 import {
   initPagination,
   getPaginationInfo,
   getCurrentPageData,
   updatePaginationInfo,
-  updatePaginationControls
+  updatePaginationControls,
 } from "./functions/pagination.js";
 import { processTierData } from "./functions/functions.js";
 
 let allData = [];
+let mode = "default";
 let selectedEvent;
 let continualId;
 
@@ -65,7 +71,12 @@ function renderEvent() {
   document.getElementById("event-director").textContent =
     selectedEvent.tournament_director || "N/A";
 
-  updatePastEventsList(continualId);
+  updatePastEventsList(continualId).then((pastEvents) => {
+    allData = pastEvents;
+    mode = "pastEvents";
+    console.log("All Data after event selected:", allData);
+    initPagination(allData, renderTable);
+  });
 
   // Smooth scroll to the event section
   const targetElement = document.getElementById("event-section");
@@ -135,35 +146,57 @@ function getTierBadge(tier) {
 function renderTable() {
   const tableBody = document.getElementById("tableBody");
   const { data: pageData } = getCurrentPageData();
+  console.log('pageData', pageData)
   const { pageSize } = getPaginationInfo();
 
   // Clear table
-  clearTable("tableBody");
+  clearTable(tableBody);
 
   // Add data rows
   pageData.forEach((item) => {
-    item = processTierData(item);
+    if (mode === "default") {
+      item = processTierData(item);
 
-    const rowContent = `
+      const rowContent = `
       <td>${item.name}</td>
       <td>${item.start_date}</td>
       <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
       <td>${item.city}</td>
       <td>${item.state}</td>
       <td>${item.country}</td>
-    `;
+      `;
 
-    const row = createClickableRow(rowContent, () => {
-      selectedEvent = item;
-      continualId = item.id;
-      renderEvent();
-    });
+      const row = createClickableRow(rowContent, () => {
+        selectedEvent = item;
+        continualId = item.id;
+        renderEvent();
+      });
 
-    tableBody.appendChild(row);
+      tableBody.appendChild(row);
+    } else if (mode === "pastEvents") {
+      console.log('mode = ', mode)
+      const rowContent = `
+      <td>${item.event_name}</td>
+      <td>${item.start_date}</td>
+      <td>${item.division}</td>
+      <td>${item.player_name}</td>
+      `;
+
+      const row = createClickableRow(rowContent, () => {
+        const webSiteLink = item.website_url;
+        window.open(webSiteLink, "_blank");
+      });
+
+      tableBody.appendChild(row);
+    }
   });
 
   // Fill empty rows
-  fillEmptyRows(tableBody, pageData.length, pageSize, 6);
+  if (mode === 'default') {
+    fillEmptyRows(tableBody, pageData.length, pageSize, 6);
+  } else if (mode = 'pastEvents') {
+    fillEmptyRows(tableBody, pageData.length, pageSize, 4);
+  }
 
   // Update pagination UI
   updatePaginationInfo();

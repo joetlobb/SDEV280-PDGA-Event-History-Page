@@ -5,6 +5,7 @@ let paginationData = [];
 // Initialize pagination
 export function initPagination(data, renderCallback) {
   paginationData = data;
+  console.log('Pagination - data', paginationData)
   currentPage = 1;
   
   // Set up event listeners
