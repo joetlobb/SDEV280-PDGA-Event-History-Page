@@ -1,203 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event History Summary - PDGA</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.png" />
     <link rel="stylesheet" href="index.css" />
     <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
-  </head>
+</head>
 
-  <body>
+<body>
     <!-- Header -->
     <header>
-      <div class="header-content">
-        <a href="index.html" class="logo">
-          <img src="./assets/logo.png" alt="pdga_logo" />
-        </a>
-        <nav>
-          <a href="index.html" class="active">Events</a>
-          <a href="#">Players</a>
-          <a href="#">About</a>
-          <div class="event-search">
-            <input type="text" placeholder="Search events..." />
-          </div>
-        </nav>
-      </div>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="./assets/logo.png" alt="pdga_logo" />
+            </a>
+            <nav>
+                <a href="index.html" class="active">Events</a>
+                <a href="#">Players</a>
+                <a href="#">About</a>
+                <div class="event-search">
+                    <form id="searchForm">
+                        <input type="text" id="searchInput" placeholder="Search events...">
+                    </form>
+                </div>
+            </nav>
+        </div>
     </header>
 
     <!-- Main Content -->
     <div class="container">
-      <!-- Page Title -->
-      <div class="page-title">
-        <h1>Event History Summary</h1>
-        <p>Comprehensive statistics and analysis from cumulative year events</p>
-      </div>
-
-      <!-- Filter Section -->
-      <div class="filter-section">
-        <h2>Filter Events</h2>
-        <div class="filter-grid">
-          <div class="filter-item">
-            <label for="year">Year</label>
-            <select id="year">
-              <option>All Years</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label for="division">Division</label>
-            <select id="division">
-              <option>All Divisions</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label for="tier">Event Tier</label>
-            <select id="tier">
-              <option>All Tiers</option>
-              <option>Major</option>
-              <option>Elite Series</option>
-              <option>A-Tier</option>
-              <option>B-Tier</option>
-              <option>C-Tier</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label for="region">Region</label>
-            <select id="region">
-              <option>All Regions</option>
-              <option>North America</option>
-              <option>Europe</option>
-              <option>Asia</option>
-              <option>Oceania</option>
-            </select>
-          </div>
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>Event History Summary</h1>
+            <p>Comprehensive statistics and analysis from cumulative year events</p>
         </div>
-      </div>
 
-      <!-- Event Section -->
-      <div class="event-section" id="event-section">
-        <!-- Event Header Card -->
-        <div class="event-header-card">
-          <div class="event-header-left">
-            <h1 class="event-title" id="event-name">Event Name</h1>
-            <div class="event-meta">
-              <span class="event-tier-badge" id="event-tier">
-                <span class="tier-badge tier-a">A-Tier</span>
-              </span>
-              <span class="event-dates" id="event-dates"> Date </span>
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h2>Filter Events</h2>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="year">Year</label>
+                    <select id="year">
+                        <option>All Years</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="division">Division</label>
+                    <select id="division">
+                        <option>All Divisions</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="tier">Event Tier</label>
+                    <select id="tier">
+                        <option>All Tiers</option>
+                        <option>Major</option>
+                        <option>Elite Series</option>
+                        <option>A-Tier</option>
+                        <option>B-Tier</option>
+                        <option>C-Tier</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="region">Region</label>
+                    <select id="region">
+                        <option>All Regions</option>
+                        <option>North America</option>
+                        <option>Europe</option>
+                        <option>Asia</option>
+                        <option>Oceania</option>
+                    </select>
+                </div>
             </div>
-          </div>
-          <div class="event-header-right">
-            <a
-              href="#"
-              class="event-website-btn"
-              id="event-website"
-              target="_blank"
-            >
-              Visit Website
-            </a>
-          </div>
         </div>
 
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Total Events</h3>
-            <div class="stat-value" id="stat-total-events">0</div>
-            <div class="stat-detail" id="stat-detail-total-event">+12% from last year</div>
-          </div>
-          <div class="stat-card">
-            <h3>Total Participants</h3>
-            <div class="stat-value" id="stat-total-players">0</div>
-            <div class="stat-detail">Across all events</div>
-          </div>
-          <div class="stat-card">
-            <h3>Average Field Size</h3>
-            <div class="stat-value" id="stat-avg-players">0</div>
-            <div class="stat-detail">Players per event</div>
-          </div>
-          <div class="stat-card">
-            <h3>Prize Money Awarded</h3>
-            <div class="stat-value" id="stat-total-prize">$0</div>
-            <div class="stat-detail">Total purse distributed</div>
-          </div>
-        </div>
-
-        <!-- Event Details -->
-        <div class="event-details">
-          <div class="event-detail-card">
-            <div class="detail-content">
-              <div class="detail-label">Location</div>
-              <div class="detail-value">
-                <span id="event-city">City</span>,&nbsp;
-                <span id="event-state">State</span>
-              </div>
-              <div class="detail-subtext" id="event-country">Country</div>
+        <!-- Event Section -->
+        <div class="event-section" id="event-section">
+            <!-- Event Header Card -->
+            <div class="event-header-card">
+                <div class="event-header-left">
+                    <h1 class="event-title" id="event-name">Event Name</h1>
+                    <div class="event-meta">
+                        <span class="event-tier-badge" id="event-tier">
+                            <span class="tier-badge tier-a">A-Tier</span>
+                        </span>
+                        <span class="event-dates" id="event-dates"> Date </span>
+                    </div>
+                </div>
+                <div class="event-header-right">
+                    <a href="#" class="event-website-btn" id="event-website" target="_blank">
+                        Visit Website
+                    </a>
+                </div>
             </div>
-          </div>
 
-          <div class="event-detail-card">
-            <div class="detail-content">
-              <div class="detail-label">Tournament Director</div>
-              <div class="detail-value event-director" id="event-director">
-                Director Name
-              </div>
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Events</h3>
+                    <div class="stat-value" id="stat-total-events">0</div>
+                    <div class="stat-detail" id="stat-detail-total-event">+12% from last year</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Participants</h3>
+                    <div class="stat-value" id="stat-total-players">0</div>
+                    <div class="stat-detail">Across all events</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Field Size</h3>
+                    <div class="stat-value" id="stat-avg-players">0</div>
+                    <div class="stat-detail">Players per event</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Prize Money Awarded</h3>
+                    <div class="stat-value" id="stat-total-prize">$0</div>
+                    <div class="stat-detail">Total purse distributed</div>
+                </div>
             </div>
-          </div>
+
+            <!-- Event Details -->
+            <div class="event-details">
+                <div class="event-detail-card">
+                    <div class="detail-content">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">
+                            <span id="event-city">City</span>,&nbsp;
+                            <span id="event-state">State</span>
+                        </div>
+                        <div class="detail-subtext" id="event-country">Country</div>
+                    </div>
+                </div>
+
+                <div class="event-detail-card">
+                    <div class="detail-content">
+                        <div class="detail-label">Tournament Director</div>
+                        <div class="detail-value event-director" id="event-director">
+                            Director Name
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="chart-section">
+                <div class="viz-options">
+                    <button class="viz-button active">Participants Trend</button>
+                    <button class="viz-button">Prize Money Analysis</button>
+                    <button class="viz-button">Average Ratings</button>
+                    <button class="viz-button">Difference in Rating</button>
+                </div>
+                <div class="chart-container" id="viz">
+                    [Interactive Chart Visualization Area]
+                </div>
+            </div>
         </div>
 
-        <!-- Chart Section -->
-        <div class="chart-section">
-          <div class="viz-options">
-            <button class="viz-button active">Participants Trend</button>
-            <button class="viz-button">Prize Money Analysis</button>
-            <button class="viz-button">Average Ratings</button>
-            <button class="viz-button">Difference in Rating</button>
-          </div>
-          <div class="chart-container" id="viz">
-            [Interactive Chart Visualization Area]
-          </div>
+        <!-- Events Table -->
+        <div class="events-table">
+            <h2>Recent Events</h2>
+            <table id="eventsTable">
+                <thead id="tableHead">
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Date</th>
+                        <th>Tier</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Country</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="startEntry">1</span> to
+                    <span id="endEntry">10</span> of
+                    <span id="totalEntries">0</span> entries
+                </div>
+
+                <div class="pagination-controls">
+                    <button class="pagination-btn" id="firstBtn">First</button>
+                    <button class="pagination-btn" id="prevBtn">Previous</button>
+
+                    <div id="pageNumbers"></div>
+
+                    <button class="pagination-btn" id="nextBtn">Next</button>
+                    <button class="pagination-btn" id="lastBtn">Last</button>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <!-- Events Table -->
-      <div class="events-table">
-        <h2>Recent Events</h2>
-        <table id="eventsTable">
-          <thead id="tableHead">
-            <tr>
-              <th>Event Name</th>
-              <th>Date</th>
-              <th>Tier</th>
-              <th>City</th>
-              <th>State</th>
-              <th>Country</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <!-- Data will be inserted here by JavaScript -->
-          </tbody>
-        </table>
-        <div class="pagination-container">
-          <div class="pagination-info">
-            Showing <span id="startEntry">1</span> to
-            <span id="endEntry">10</span> of
-            <span id="totalEntries">0</span> entries
-          </div>
-
-          <div class="pagination-controls">
-            <button class="pagination-btn" id="firstBtn">First</button>
-            <button class="pagination-btn" id="prevBtn">Previous</button>
-
-            <div id="pageNumbers"></div>
-
-            <button class="pagination-btn" id="nextBtn">Next</button>
-            <button class="pagination-btn" id="lastBtn">Last</button>
-          </div>
-        </div>
-      </div>
     </div>
-  </body>
-  <script src="script.js" type="module"></script>
+</body>
+<script src="script.js" type="module"></script>
+
 </html>

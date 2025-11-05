@@ -1,5 +1,4 @@
 import {
-  getAllRecentEventsContinualList,
   getContinualEventsParticipants,
   getContinualEventsWithPrizes,
   getContinualEventsAverageRatingByDivision,
@@ -63,6 +62,27 @@ let continualId;
   allData = sortedLatestEvents;
   initPagination(allData, renderTable);
 })();
+
+// --------------------------------------------------------------------------------------------------------------------------
+//
+//                                               SEARCH FUNCTIONALITY 
+//
+// --------------------------------------------------------------------------------------------------------------------------
+
+const searchForm = document.getElementById('searchForm');
+const searchInput = document.getElementById('searchInput');
+
+// Handle search form submission (works on both pages)
+if (searchForm && searchInput) {
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            // Redirect to search page with search query
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
+    });
+}
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
