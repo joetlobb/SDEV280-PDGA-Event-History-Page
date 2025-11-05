@@ -5,22 +5,30 @@ import {
   getContinualEventsDiffRating,
   getAllEventsID,
   getAllEventsDetails,
+  getPastEvents,
+  getPlayersByPdgaNumbers,
+  getParticipantsAndPrizesPerYearByPdgaEventIds,
 } from "./functions/queries.js";
 import {
-  clearTable, createClickableRow,
-  fillEmptyRows, updateStatCards,
-  updateEventDateRange, updatePastEventsList
+  clearTable,
+  createClickableRow,
+  fillEmptyRows,
+  updateStatCards,
+  updateEventDateRange,
+  relocatePaginationControls,
 } from "./functions/domHandler.js";
 import {
   initPagination,
   getPaginationInfo,
   getCurrentPageData,
   updatePaginationInfo,
-  updatePaginationControls
+  updatePaginationControls,
 } from "./functions/pagination.js";
 import { processTierData } from "./functions/functions.js";
 
-let allData = [];
+const allEventsData = [];
+let recentEventsList = [];
+let pastEventsList = [];
 let selectedEvent;
 let continualId;
 
@@ -33,55 +41,86 @@ let continualId;
 (async function processAllEventsData() {
   const allEventsId = await getAllEventsID();
   const allEventsDetails = await getAllEventsDetails();
-  const allEventsData = [];
-  allEventsDetails.forEach(event => {
-    const newId = allEventsId.find(e => e.pdga_event_id === event.pdga_event_id)?.id || null;
-    const newName = allEventsId.find(e => e.pdga_event_id === event.pdga_event_id)?.name || null;
+  allEventsDetails.forEach((event) => {
+    const newId =
+      allEventsId.find((e) => e.pdga_event_id === event.pdga_event_id)?.id ||
+      null;
+    const newName =
+      allEventsId.find((e) => e.pdga_event_id === event.pdga_event_id)?.name ||
+      null;
     allEventsData.push({
       ...event,
       id: newId,
-      name: newName
+      name: newName,
     });
   });
 
   const latestEventsMap = allEventsData.reduce((accumulator, currentEvent) => {
     const currentId = currentEvent.id;
-    if (!accumulator[currentId] || currentEvent.year > accumulator[currentId].year) {
+    if (
+      !accumulator[currentId] ||
+      currentEvent.year > accumulator[currentId].year
+    ) {
       accumulator[currentId] = currentEvent;
     }
     return accumulator;
   }, {});
   const latestEventsArray = Object.values(latestEventsMap);
 
-  const sortedLatestEvents = latestEventsArray.sort((a, b) => {
+  const sortedLatestEvents = sortingEventsByDate(latestEventsArray);
+
+  recentEventsList = sortedLatestEvents;
+  initPagination(recentEventsList, renderTable);
+})();
+
+function sortingEventsByDate(events) {
+  return events.sort((a, b) => {
     const dateA = new Date(a.start_date);
     const dateB = new Date(b.start_date);
     return dateB - dateA;
   });
+}
 
-  allData = sortedLatestEvents;
-  initPagination(allData, renderTable);
-})();
+// async function updatePastEventsList(id) {
+//   const pastEvents = await getPastEvents(id);
+
+//   const pdgaNumbers = [];
+
+//   pastEvents.forEach(event => {
+//     pdgaNumbers.push(event.pdga_number);
+//   })
+
+//   const playersData = await getPlayersByPdgaNumbers(pdgaNumbers);
+
+//   pastEvents.forEach(event => {
+//     const player = playersData.find(p => String(p.pdga_number) === String(event.pdga_number));
+//     event.player_name = player ? `${player.first_name} ${player.last_name}` : "N/A";
+//   });
+
+//   pastEventsData = pastEvents;
+//   console.log(pastEvents);
+//   initPagination(pastEventsData, renderPastEventsTable);
+// }
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
-//                                               SEARCH FUNCTIONALITY 
+//                                               SEARCH FUNCTIONALITY
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-const searchForm = document.getElementById('searchForm');
-const searchInput = document.getElementById('searchInput');
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
 
 // Handle search form submission (works on both pages)
 if (searchForm && searchInput) {
-    searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = searchInput.value.trim();
-        if (query) {
-            // Redirect to search page with search query
-            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-        }
-    });
+  searchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const query = searchInput.value.trim();
+    if (query) {
+      // Redirect to search page with search query
+      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+    }
+  });
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
@@ -114,7 +153,7 @@ function renderEvent() {
   document.getElementById("event-director").textContent =
     selectedEvent.tournament_director || "N/A";
 
-  updatePastEventsList(continualId);
+  renderPastEventsTable();
 
   // Smooth scroll to the event section
   const targetElement = document.getElementById("event-section");
@@ -202,10 +241,46 @@ function renderTable() {
       <td>${item.country}</td>
     `;
 
-    const row = createClickableRow(rowContent, () => {
+    const row = createClickableRow(rowContent, async () => {
       selectedEvent = item;
       continualId = item.id;
+      const unsortedSelectedEvent = allEventsData.filter(
+        (event) => event.id === continualId
+      );
+      const pdgaEventIds = [];
+      unsortedSelectedEvent.forEach((event) => {
+        pdgaEventIds.push(event.pdga_event_id);
+      });
+      const additionalData =
+        await getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds);
+      console.log(additionalData);
+
+      const newUnsortedSelectedEvent = [];
+      unsortedSelectedEvent.forEach((event) => {
+        const playersCount =
+          additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
+            ?.players_count || "N/A";
+        const totalPrize =
+          additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
+            ?.total_prize || "N/A";
+        newUnsortedSelectedEvent.push({
+          ...event,
+          players_count: playersCount,
+          total_prize: totalPrize,
+        });
+      });
+
+      pastEventsList = sortingEventsByDate(newUnsortedSelectedEvent);
+      console.log(pastEventsList);
       renderEvent();
+
+      // move pagination button to the past events table
+      const paginationContainer = document.querySelector(".pagination-container");
+      const newParent = document.getElementById("past-events-table");
+      relocatePaginationControls(paginationContainer, newParent);
+      document.getElementById('events-table').style.display = 'none';
+
+      initPagination(pastEventsList, renderPastEventsTable);
     });
 
     tableBody.appendChild(row);
@@ -213,6 +288,43 @@ function renderTable() {
 
   // Fill empty rows
   fillEmptyRows(tableBody, pageData.length, pageSize, 6);
+
+  // Update pagination UI
+  updatePaginationInfo();
+  updatePaginationControls();
+}
+
+function renderPastEventsTable() {
+  const tableBody = document.getElementById("past-events-body");
+  const { data: pageData } = getCurrentPageData();
+  const { pageSize } = getPaginationInfo();
+
+  // Clear table
+  clearTable("past-events-body");
+
+  // Add data rows
+  pageData.forEach((item) => {
+    const total_prize =
+      item.total_prize === "N/A"
+        ? "N/A"
+        : `$${(+item.total_prize).toLocaleString()}`;
+
+    const rowContent = `
+      <td>${item.year}</td>
+      <td>${item.event_name}</td>
+      <td>${item.start_date}</td>
+      <td>${item.players_count}</td>
+      <td>${total_prize}</td>
+    `;
+
+    const row = createClickableRow(rowContent, () => {
+      window.open(item.website_url, '_blank');
+    });
+    tableBody.appendChild(row);
+  });
+
+  // Fill empty rows
+  fillEmptyRows(tableBody, pageData.length, pageSize, 5);
 
   // Update pagination UI
   updatePaginationInfo();

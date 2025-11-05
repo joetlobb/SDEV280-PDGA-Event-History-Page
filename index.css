@@ -415,6 +415,7 @@ nav a:hover {
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
 }
 
 .events-table h2 {
@@ -568,6 +569,30 @@ tbody tr.empty-row:hover::before {
 .tier-xm {
     background-color: #f0c419;
     color: #333;
+}
+
+/* Past Events Table */
+.past-events-table th:first-child,
+.past-events-table td:first-child {
+    width: 80px;
+}
+
+.past-events-table th:nth-child(2),
+.past-events-table td:nth-child(2) {
+    width: 550px;
+}
+
+.past-events-table th:nth-child(3),
+.past-events-table td:nth-child(3),
+.past-events-table th:nth-child(4),
+.past-events-table td:nth-child(4){
+    text-align: center;
+}
+
+.past-events-table th:last-child,
+.past-events-table td:last-child {
+    width: 100px;
+    text-align: right;
 }
 
 /* Pagination Styles */
