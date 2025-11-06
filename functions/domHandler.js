@@ -134,3 +134,71 @@ export function activateBackToAllEventsBtn() {
     window.location.reload();
   });
 }
+
+export function getTierBadge(tier) {
+  let tierClass = "";
+  let tierLabel = tier;
+
+  switch (tier) {
+    case "Major":
+      tierClass = "tier-m";
+      tierLabel = "PDGA Major";
+      break;
+    case "Elite":
+      tierClass = "tier-es";
+      tierLabel = "Elite Series";
+      break;
+    case "Tier-A":
+      tierClass = "tier-a";
+      tierLabel = "A-Tier";
+      break;
+    case "Tier-B":
+      tierClass = "tier-b";
+      tierLabel = "B-Tier";
+      break;
+    case "Tier-C":
+      tierClass = "tier-c";
+      tierLabel = "C-Tier";
+      break;
+    case "Tier-XA":
+      tierClass = "tier-xa";
+      tierLabel = "XA-Tier";
+      break;
+    case "Tier-XB":
+      tierClass = "tier-xb";
+      tierLabel = "XB-Tier";
+      break;
+    case "Tier-XC":
+      tierClass = "tier-xc";
+      tierLabel = "XC-Tier";
+      break;
+    case "Tier-XM":
+      tierClass = "tier-xm";
+      tierLabel = "XM-Tier";
+      break;
+    default:
+      tierLabel = tier || "Unknown";
+  }
+
+  return `<span class="tier-badge ${tierClass}">${tierLabel}</span>`;
+}
+
+export function createChart(title, legend, xAxis, yAxis, series, tooltip) {
+  // Initialize the echarts instance based on the prepared dom
+  var myChart = echarts.init(document.getElementById("viz"));
+
+  myChart.clear();
+
+  // Specify the configuration items and data for the chart
+  var option = {
+    title: title,
+    tooltip: tooltip,
+    legend: legend,
+    xAxis: xAxis,
+    yAxis: yAxis,
+    series: series,
+  };
+
+  // Display the chart using the configuration items and data just specified.
+  myChart.setOption(option);
+}

@@ -17,6 +17,8 @@ import {
   updateEventDateRange,
   relocatePaginationControls,
   activateBackToAllEventsBtn,
+  getTierBadge,
+  createChart,
 } from "./functions/domHandler.js";
 import {
   initPagination,
@@ -25,7 +27,7 @@ import {
   updatePaginationInfo,
   updatePaginationControls,
 } from "./functions/pagination.js";
-import { processTierData } from "./functions/functions.js";
+import { customOrder, processTierData, sortDivisions } from "./functions/functions.js";
 
 const allEventsData = [];
 let recentEventsList = [];
@@ -161,53 +163,7 @@ function renderEvent() {
   }
 }
 
-function getTierBadge(tier) {
-  let tierClass = "";
-  let tierLabel = tier;
 
-  switch (tier) {
-    case "Major":
-      tierClass = "tier-m";
-      tierLabel = "PDGA Major";
-      break;
-    case "Elite":
-      tierClass = "tier-es";
-      tierLabel = "Elite Series";
-      break;
-    case "Tier-A":
-      tierClass = "tier-a";
-      tierLabel = "A-Tier";
-      break;
-    case "Tier-B":
-      tierClass = "tier-b";
-      tierLabel = "B-Tier";
-      break;
-    case "Tier-C":
-      tierClass = "tier-c";
-      tierLabel = "C-Tier";
-      break;
-    case "Tier-XA":
-      tierClass = "tier-xa";
-      tierLabel = "XA-Tier";
-      break;
-    case "Tier-XB":
-      tierClass = "tier-xb";
-      tierLabel = "XB-Tier";
-      break;
-    case "Tier-XC":
-      tierClass = "tier-xc";
-      tierLabel = "XC-Tier";
-      break;
-    case "Tier-XM":
-      tierClass = "tier-xm";
-      tierLabel = "XM-Tier";
-      break;
-    default:
-      tierLabel = tier || "Unknown";
-  }
-
-  return `<span class="tier-badge ${tierClass}">${tierLabel}</span>`;
-}
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
@@ -248,7 +204,6 @@ function renderTable() {
       });
       const additionalData =
         await getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds);
-      console.log(additionalData);
 
       const newUnsortedSelectedEvent = [];
       unsortedSelectedEvent.forEach((event) => {
@@ -266,7 +221,6 @@ function renderTable() {
       });
 
       pastEventsList = sortingEventsByDate(newUnsortedSelectedEvent);
-      console.log(pastEventsList);
       renderEvent();
 
       // move pagination button to the past events table
@@ -369,72 +323,7 @@ async function getContinualEventsDivisions(continualId) {
   }
 }
 
-function sortDivisions(divisions) {
-  // Define custom order
-  const customOrder = [
-    "MPO",
-    "MPG",
-    "FPO",
-    "FPG",
-    "MA40",
-    "MP40",
-    "FA40",
-    "FP40",
-    "MA50",
-    "MP50",
-    "FA50",
-    "FP50",
-    "MA55",
-    "MP55",
-    "FA55",
-    "FP55",
-    "MA60",
-    "MP60",
-    "FA60",
-    "FP60",
-    "MA65",
-    "MP65",
-    "FA65",
-    "FP65",
-    "MA70",
-    "MP70",
-    "FA70",
-    "FP70",
-    "MA75",
-    "MP75",
-    "FA75",
-    "FP75",
-    "MA80",
-    "MP80",
-    "FA80",
-    "FP80",
-    "MJ18",
-    "FJ18",
-    "MJ15",
-    "FJ15",
-    "MJ12",
-    "FJ12",
-    "MJ10",
-    "FJ10",
-    "MJ08",
-    "FJ08",
-    "MJ06",
-    "FJ06",
-  ];
 
-  // Sort based on custom order
-  return divisions.sort((a, b) => {
-    const indexA = customOrder.indexOf(a);
-    const indexB = customOrder.indexOf(b);
-
-    // If division not in custom order, put it at the end
-    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-
-    return indexA - indexB;
-  });
-}
 
 async function processFilterEvent() {
   const years = await getContinualEventYears(continualId);
@@ -631,56 +520,6 @@ function renderAverageRatings() {
 
     // Sort divisions using your existing sortDivisions function
     const sortedData = data.sort((a, b) => {
-      const customOrder = [
-        "MPO",
-        "MPG",
-        "FPO",
-        "FPG",
-        "MA40",
-        "MP40",
-        "FA40",
-        "FP40",
-        "MA50",
-        "MP50",
-        "FA50",
-        "FP50",
-        "MA55",
-        "MP55",
-        "FA55",
-        "FP55",
-        "MA60",
-        "MP60",
-        "FA60",
-        "FP60",
-        "MA65",
-        "MP65",
-        "FA65",
-        "FP65",
-        "MA70",
-        "MP70",
-        "FA70",
-        "FP70",
-        "MA75",
-        "MP75",
-        "FA75",
-        "FP75",
-        "MA80",
-        "MP80",
-        "FA80",
-        "FP80",
-        "MJ18",
-        "FJ18",
-        "MJ15",
-        "FJ15",
-        "MJ12",
-        "FJ12",
-        "MJ10",
-        "FJ10",
-        "MJ08",
-        "FJ08",
-        "MJ06",
-        "FJ06",
-      ];
       const indexA = customOrder.indexOf(a.division);
       const indexB = customOrder.indexOf(b.division);
       if (indexA === -1 && indexB === -1)
@@ -877,30 +716,4 @@ function renderSelectedVizButton() {
     );
     handleVizButtonClick(firstButton.textContent.trim());
   }
-}
-
-// --------------------------------------------------------------------------------------------------------------------------
-//
-//                                               CODES FOR ECHART CREATION
-//
-// --------------------------------------------------------------------------------------------------------------------------
-
-function createChart(title, legend, xAxis, yAxis, series, tooltip) {
-  // Initialize the echarts instance based on the prepared dom
-  var myChart = echarts.init(document.getElementById("viz"));
-
-  myChart.clear();
-
-  // Specify the configuration items and data for the chart
-  var option = {
-    title: title,
-    tooltip: tooltip,
-    legend: legend,
-    xAxis: xAxis,
-    yAxis: yAxis,
-    series: series,
-  };
-
-  // Display the chart using the configuration items and data just specified.
-  myChart.setOption(option);
 }
