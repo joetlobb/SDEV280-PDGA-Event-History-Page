@@ -1,12 +1,10 @@
+import { handleVizButtonClick } from "../script.js";
 import {
-  getRecurringEventCountOnContinualEvent,
-  getPlayerCountOnContinualEvent,
-  getAvgPlayerCountOnContinualEvent,
-  getTotalPrizeOnContinualEvent,
-  getEventDateRange,
-  getPastEvents,
-  getPlayersByPdgaNumbers,
-} from "./queries.js";
+  getCurrentPageData,
+  getPaginationInfo,
+  updatePaginationControls,
+  updatePaginationInfo,
+} from "./pagination.js";
 
 export function clearTable(tableBodyId) {
   const tableBody = document.getElementById(tableBodyId);
@@ -42,53 +40,34 @@ export function fillEmptyRows(
   }
 }
 
-export async function updateStatCards(id) {
-  const statData = {};
+export async function updateStatCards(pastEventsList) {
+  const eventsCount = pastEventsList.length;
+  const startYear = pastEventsList[pastEventsList.length - 1].year;
+  let playersCount = 0;
+  let totalPrize = 0;
 
-  const [eventsData, playersData, avgPlayersData, prizeData] =
-    await Promise.all([
-      getRecurringEventCountOnContinualEvent(id),
-      getPlayerCountOnContinualEvent(id),
-      getAvgPlayerCountOnContinualEvent(id),
-      getTotalPrizeOnContinualEvent(id),
-    ]);
-
-  statData.events_count = (eventsData?.[0] || {})["events_count"];
-  statData.start_year = (eventsData?.[0] || {})["start_year"];
-  statData.players_count = (playersData?.[0] || {})["players_count"];
-  statData.avg_players_count = +(avgPlayersData?.[0] || {})[
-    "avg_players_count"
-  ];
-  statData.total_prize = +(prizeData?.[0] || {})["total_prize"];
+  pastEventsList.forEach((event) => {
+    playersCount += event.players_count === "N/A" ? 0 : event.players_count;
+    totalPrize += event.total_prize === "N/A" ? 0 : event.total_prize;
+  });
+  const avgPlayersCount = Math.round(playersCount / eventsCount, 0);
 
   document.getElementById("stat-total-events").textContent =
-    statData["events_count"].toLocaleString();
+    eventsCount.toLocaleString();
   document.getElementById(
     "stat-detail-total-event"
-  ).textContent = `Running Since ${statData["start_year"]}`;
+  ).textContent = `Running Since ${startYear}`;
   document.getElementById("stat-total-players").textContent =
-    statData["players_count"].toLocaleString();
+    playersCount.toLocaleString();
   document.getElementById("stat-avg-players").textContent =
-    statData["avg_players_count"].toLocaleString();
+    avgPlayersCount.toLocaleString();
 
-  if (statData["total_prize"] > 1000000) {
+  if (totalPrize > 1000000) {
     document.getElementById("stat-total-prize").textContent =
-      "$" + (statData["total_prize"] / 1000000).toFixed(1) + "M";
+      "$" + (totalPrize / 1000000).toFixed(1) + "M";
   } else {
     document.getElementById("stat-total-prize").textContent =
-      "$" + statData["total_prize"].toLocaleString();
-  }
-}
-
-export async function updateEventDateRange(id) {
-  const dateData = await getEventDateRange(id);
-  if (dateData && dateData.length > 0) {
-    const start_year = dateData[0]["start_year"];
-    const end_year = dateData[0]["end_year"];
-
-    document.getElementById(
-      "event-dates"
-    ).textContent = `${start_year} - ${end_year}`;
+      "$" + totalPrize.toLocaleString();
   }
 }
 
@@ -130,7 +109,7 @@ export function relocatePaginationControls(
 export function activateBackToAllEventsBtn() {
   const btn = document.getElementById("all-events-btn");
   btn.addEventListener("click", () => {
-    document.getElementById('btn-container').style.display = 'none';
+    document.getElementById("btn-container").style.display = "none";
     window.location.reload();
   });
 }
@@ -201,4 +180,142 @@ export function createChart(title, legend, xAxis, yAxis, series, tooltip) {
 
   // Display the chart using the configuration items and data just specified.
   myChart.setOption(option);
+}
+
+export function renderPastEventsTable() {
+  const tableBody = document.getElementById("past-events-body");
+  const { data: pageData } = getCurrentPageData();
+  const { pageSize, currentPage } = getPaginationInfo();
+
+  // Clear table
+  clearTable("past-events-body");
+
+  // Add data rows
+  pageData.forEach((item) => {
+    const total_prize =
+      item.total_prize === "N/A"
+        ? "N/A"
+        : `$${(+item.total_prize).toLocaleString()}`;
+
+    const rowContent = `
+      <td>${item.year}</td>
+      <td>${item.event_name}</td>
+      <td>${item.start_date}</td>
+      <td>${item.players_count}</td>
+      <td>${total_prize}</td>
+    `;
+
+    const row = createClickableRow(rowContent, () => {
+      window.open(item.website_url, "_blank");
+    });
+    tableBody.appendChild(row);
+  });
+
+  // Fill empty rows
+  fillEmptyRows(tableBody, pageData.length, pageSize, 5);
+
+  // Update pagination UI
+  updatePaginationInfo();
+  updatePaginationControls();
+}
+
+export function renderEventDetails(selectedEvent, pastEventsList) {
+  const eventSection = document.getElementById("event-section");
+  const eventName = document.getElementById("event-name");
+  const eventTier = document.getElementById("event-tier");
+  const eventDates = document.getElementById("event-dates");
+  const eventCity = document.getElementById("event-city");
+  const eventState = document.getElementById("event-state");
+  const eventCountry = document.getElementById("event-country");
+  const eventDirector = document.getElementById("event-director");
+
+  // Check if all required elements exist
+  if (
+    !eventSection ||
+    !eventName ||
+    !eventTier ||
+    !eventDates ||
+    !eventCity ||
+    !eventState ||
+    !eventCountry ||
+    !eventDirector
+  ) {
+    console.error("One or more required elements not found");
+    return;
+  }
+
+  // Check if selectedEvent exists
+  if (!selectedEvent) {
+    console.error("selectedEvent is not defined");
+    return;
+  }
+
+  // Now safely assign values
+  eventSection.style.display = "block";
+  eventName.textContent = selectedEvent.event_name || "Unknown Event";
+
+  const tierBadge = getTierBadge(selectedEvent.tier);
+  eventTier.innerHTML = tierBadge || "";
+
+  // Check pastEventsList
+  if (pastEventsList && pastEventsList.length > 0) {
+    const start_year = pastEventsList[pastEventsList.length - 1].year;
+    const end_year = pastEventsList[0].year;
+    eventDates.textContent = `${start_year} - ${end_year}`;
+  } else {
+    eventDates.textContent = "N/A";
+  }
+
+  updateStatCards(pastEventsList);
+
+  eventCity.textContent = selectedEvent.city + ",\u00A0" || "N/A,\u00A0";
+  eventState.textContent = selectedEvent.state
+    ? selectedEvent.state + ",\u00A0"
+    : "";
+  eventCountry.textContent = selectedEvent.country || "N/A";
+  eventDirector.textContent = selectedEvent.tournament_director || "N/A";
+
+  renderPastEventsTable();
+
+  // Smooth scroll to the event section
+  eventSection.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}
+
+export function activateVizSelectionBtn() {
+  const vizButtons = document.querySelectorAll(".viz-button");
+
+  // 1. Add click handlers for interaction
+  vizButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      // Remove active class from all
+      vizButtons.forEach((btn) => btn.classList.remove("active"));
+
+      // Set the clicked button as active
+      this.classList.add("active");
+
+      // Get the text and execute the handler
+      const buttonText = this.textContent.trim();
+      handleVizButtonClick(buttonText);
+    });
+  });
+}
+
+export function renderSelectedVizButton() {
+  const initialActiveButton = document.querySelector(".viz-button.active");
+
+  if (initialActiveButton) {
+    const initialButtonText = initialActiveButton.textContent.trim();
+    handleVizButtonClick(initialButtonText);
+  } else if (vizButtons.length > 0) {
+    // If no button has 'active' set in HTML, activate the first one by default
+    const firstButton = vizButtons[0];
+    firstButton.classList.add("active");
+    console.log(
+      `No active button found. Defaulting to: ${firstButton.textContent.trim()}`
+    );
+    handleVizButtonClick(firstButton.textContent.trim());
+  }
 }

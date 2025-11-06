@@ -1,5 +1,3 @@
-import { getTotalPlayers, getTotalEvents, getAvgPlayersPerEvent, getTotalPrize, updateStatCards } from './queries.js'
-
 let allData = [];
 let selectedEvent;
 let continualId;

@@ -77,32 +77,45 @@ export function updatePaginationControls() {
 
 // Set up event listeners
 function setupPaginationListeners(renderCallback) {
-  document.getElementById("firstBtn").addEventListener("click", () => {
+  const firstBtn = document.getElementById("firstBtn");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const lastBtn = document.getElementById("lastBtn");
+  const pageNumbers = document.getElementById("pageNumbers");
+
+  // Check if elements exist
+  if (!firstBtn || !prevBtn || !nextBtn || !lastBtn || !pageNumbers) {
+    console.error("One or more pagination elements not found");
+    return;
+  }
+
+  // Define handlers
+  const firstHandler = () => {
     currentPage = 1;
     renderCallback();
-  });
+  };
 
-  document.getElementById("prevBtn").addEventListener("click", () => {
+  const prevHandler = () => {
     if (currentPage > 1) {
       currentPage--;
       renderCallback();
     }
-  });
+  };
 
-  document.getElementById("nextBtn").addEventListener("click", () => {
+  const nextHandler = () => {
     const totalPages = Math.ceil(paginationData.length / pageSize);
     if (currentPage < totalPages) {
       currentPage++;
       renderCallback();
     }
-  });
+  };
 
-  document.getElementById("lastBtn").addEventListener("click", () => {
+  const lastHandler = () => {
     currentPage = Math.ceil(paginationData.length / pageSize);
     renderCallback();
-  });
+  };
 
-  document.getElementById("pageNumbers").addEventListener("click", (e) => {
+  const pageNumbersHandler = (e) => {
     if (e.target.classList.contains("pagination-btn")) {
       const page = parseInt(e.target.getAttribute('data-page'));
       if (page) {
@@ -110,7 +123,28 @@ function setupPaginationListeners(renderCallback) {
         renderCallback();
       }
     }
-  });
+  };
+
+  // Remove old listeners (if they exist)
+  firstBtn.replaceWith(firstBtn.cloneNode(true));
+  prevBtn.replaceWith(prevBtn.cloneNode(true));
+  nextBtn.replaceWith(nextBtn.cloneNode(true));
+  lastBtn.replaceWith(lastBtn.cloneNode(true));
+  pageNumbers.replaceWith(pageNumbers.cloneNode(true));
+
+  // Get fresh references after cloning
+  const newFirstBtn = document.getElementById("firstBtn");
+  const newPrevBtn = document.getElementById("prevBtn");
+  const newNextBtn = document.getElementById("nextBtn");
+  const newLastBtn = document.getElementById("lastBtn");
+  const newPageNumbers = document.getElementById("pageNumbers");
+
+  // Add new listeners
+  newFirstBtn.addEventListener("click", firstHandler);
+  newPrevBtn.addEventListener("click", prevHandler);
+  newNextBtn.addEventListener("click", nextHandler);
+  newLastBtn.addEventListener("click", lastHandler);
+  newPageNumbers.addEventListener("click", pageNumbersHandler);
 }
 
 // Change page size

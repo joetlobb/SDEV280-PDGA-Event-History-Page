@@ -1,56 +1,60 @@
 import {
-  getContinualEventsParticipants,
-  getContinualEventsWithPrizes,
-  getContinualEventsAverageRatingByDivision,
-  getContinualEventsDiffRating,
   getAllEventsID,
   getAllEventsDetails,
-  getPastEvents,
-  getPlayersByPdgaNumbers,
   getParticipantsAndPrizesPerYearByPdgaEventIds,
-} from "./functions/queries.js";
-import {
   clearTable,
   createClickableRow,
   fillEmptyRows,
-  updateStatCards,
-  updateEventDateRange,
   relocatePaginationControls,
   activateBackToAllEventsBtn,
-  getTierBadge,
-  createChart,
-} from "./functions/domHandler.js";
-import {
   initPagination,
   getPaginationInfo,
   getCurrentPageData,
   updatePaginationInfo,
   updatePaginationControls,
-} from "./functions/pagination.js";
-import { customOrder, processTierData, sortDivisions } from "./functions/functions.js";
+  processTierData,
+  sortingEventsByDate,
+  renderPastEventsTable,
+  renderEventDetails,
+  renderParticipantsTrend,
+  renderPrizeMoneyAnalysis,
+  renderAverageRatings,
+  renderDiffRating,
+  activateVizSelectionBtn,
+  renderSelectedVizButton,
+} from "./functions/index.js";
 
 const allEventsData = [];
 let recentEventsList = [];
-let pastEventsList = [];
 let selectedEvent;
+let pastEventsList = [];
 let continualId;
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
-//                                               CODES FOR INITIAL LOAD UP
+//                                               Initialization Code
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-(async function processAllEventsData() {
-  const allEventsId = await getAllEventsID();
-  const allEventsDetails = await getAllEventsDetails();
+(async () => {
+  const [allEventsId, allEventsDetails] = await Promise.all([
+    getAllEventsID(),
+    getAllEventsDetails(),
+  ]);
+
+  // map all events with continualId
   allEventsDetails.forEach((event) => {
+    // continualId = newId
     const newId =
       allEventsId.find((e) => e.pdga_event_id === event.pdga_event_id)?.id ||
       null;
+
+    // name = eventgeneric name
     const newName =
       allEventsId.find((e) => e.pdga_event_id === event.pdga_event_id)?.name ||
       null;
+
+    // now assign to allEventsData
     allEventsData.push({
       ...event,
       id: newId,
@@ -58,6 +62,7 @@ let continualId;
     });
   });
 
+  // use reduce to get out only the lastest year of that continual event
   const latestEventsMap = allEventsData.reduce((accumulator, currentEvent) => {
     const currentId = currentEvent.id;
     if (
@@ -68,22 +73,22 @@ let continualId;
     }
     return accumulator;
   }, {});
+
+  // convert obj to array
   const latestEventsArray = Object.values(latestEventsMap);
 
+  // sort by date
   const sortedLatestEvents = sortingEventsByDate(latestEventsArray);
 
+  // assign to recentEventsList
   recentEventsList = sortedLatestEvents;
-  initPagination(recentEventsList, renderTable);
-  activateBackToAllEventsBtn()
-})();
 
-function sortingEventsByDate(events) {
-  return events.sort((a, b) => {
-    const dateA = new Date(a.start_date);
-    const dateB = new Date(b.start_date);
-    return dateB - dateA;
-  });
-}
+  // initialize pagination in recent events table
+  initPagination(recentEventsList, renderTable);
+
+  activateVizSelectionBtn();
+  activateBackToAllEventsBtn();  
+})();
 
 // async function updatePastEventsList(id) {
 //   const pastEvents = await getPastEvents(id);
@@ -129,41 +134,15 @@ if (searchForm && searchInput) {
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
-//                                               FUNCTION AFTER EVENT SELECTED
+//                                               EVENT SELECTED HANDLER
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
 function renderEvent() {
-  processFilterEvent();
-  updateEventDateRange(continualId);
-  updateStatCards(continualId);
+  // processFilterEvent();
+  renderEventDetails(selectedEvent, pastEventsList);
   renderSelectedVizButton();
-  document.getElementById("event-section").style.display = "block";
-  document.getElementById("event-name").textContent = selectedEvent.event_name;
-  document.getElementById("event-dates").textContent =
-    "Date " + selectedEvent.start_date;
-  const tierBadge = getTierBadge(selectedEvent.tier);
-  document.getElementById("event-tier").innerHTML = tierBadge;
-  document.getElementById("event-city").textContent = selectedEvent.city;
-  document.getElementById("event-state").textContent = selectedEvent.state;
-  document.getElementById("event-country").textContent = selectedEvent.country;
-  document.getElementById("event-director").textContent =
-    selectedEvent.tournament_director || "N/A";
-
-  renderPastEventsTable();
-
-  // Smooth scroll to the event section
-  const targetElement = document.getElementById("event-section");
-
-  if (targetElement) {
-    targetElement.scrollIntoView({
-      behavior: "smooth", // For a smooth animated scroll
-      block: "start", // Aligns the top of the element to the top of the viewport
-    });
-  }
 }
-
-
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
@@ -192,12 +171,20 @@ function renderTable() {
       <td>${item.country}</td>
     `;
 
+    // Add event listener to the row
     const row = createClickableRow(rowContent, async () => {
+      // Assign selectedEvent
       selectedEvent = item;
+
+      // Assign selectedEvent continualId
       continualId = item.id;
+
+      // Get selectedEvent data from allEventsData
       const unsortedSelectedEvent = allEventsData.filter(
         (event) => event.id === continualId
       );
+
+      // Gather all pdga_event_id for query additional data (players count and total prize)
       const pdgaEventIds = [];
       unsortedSelectedEvent.forEach((event) => {
         pdgaEventIds.push(event.pdga_event_id);
@@ -205,6 +192,7 @@ function renderTable() {
       const additionalData =
         await getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds);
 
+      // Map to new array
       const newUnsortedSelectedEvent = [];
       unsortedSelectedEvent.forEach((event) => {
         const playersCount =
@@ -227,12 +215,12 @@ function renderTable() {
       const paginationContainer = document.getElementById(
         "pagination-container"
       );
-      // const buttonContainer = document.getElementById('btn-container');
-      // const parentOfButtonContainer = buttonContainer ? buttonContainer.parentElement : null;
-      const newParent = document.getElementById('past-events-table')
+      const newParent = document.getElementById("past-events-table");
       relocatePaginationControls(paginationContainer, newParent);
-      document.getElementById("past-events-table").style.display = 'block';
-      document.getElementById('btn-container').style.display = 'flex';
+
+      // Adjust CSS accordingly
+      document.getElementById("past-events-table").style.display = "block";
+      document.getElementById("btn-container").style.display = "flex";
       document.getElementById("events-table").style.display = "none";
 
       initPagination(pastEventsList, renderPastEventsTable);
@@ -249,471 +237,32 @@ function renderTable() {
   updatePaginationControls();
 }
 
-function renderPastEventsTable() {
-  const tableBody = document.getElementById("past-events-body");
-  const { data: pageData } = getCurrentPageData();
-  const { pageSize } = getPaginationInfo();
-
-  // Clear table
-  clearTable("past-events-body");
-
-  // Add data rows
-  pageData.forEach((item) => {
-    const total_prize =
-      item.total_prize === "N/A"
-        ? "N/A"
-        : `$${(+item.total_prize).toLocaleString()}`;
-
-    const rowContent = `
-      <td>${item.year}</td>
-      <td>${item.event_name}</td>
-      <td>${item.start_date}</td>
-      <td>${item.players_count}</td>
-      <td>${total_prize}</td>
-    `;
-
-    const row = createClickableRow(rowContent, () => {
-      window.open(item.website_url, "_blank");
-    });
-    tableBody.appendChild(row);
-  });
-
-  // Fill empty rows
-  fillEmptyRows(tableBody, pageData.length, pageSize, 5);
-
-  // Update pagination UI
-  updatePaginationInfo();
-  updatePaginationControls();
-}
-
-// --------------------------------------------------------------------------------------------------------------------------
-//
-//                                               CODES FOR FILTERING SECTION
-//
-// --------------------------------------------------------------------------------------------------------------------------
-
-// Code for adding item to the filter
-async function getContinualEventYears(continualId) {
-  try {
-    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventYears&continualId=${continualId}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-async function getContinualEventsDivisions(continualId) {
-  try {
-    const url = `https://coderelic.greenriverdev.com/query.php?queryType=getContinualEventsDivisions&continualId=${continualId}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-
-
-async function processFilterEvent() {
-  const years = await getContinualEventYears(continualId);
-  const yearList = years.map((item) => item.year);
-  const yearNumbers = years.map((item) => parseInt(item.year));
-  addYearList(yearNumbers);
-
-  const eventDivisions = await getContinualEventsDivisions(continualId);
-  const allDivisions = eventDivisions.flatMap((event) => event.divisions);
-  const uniqueDivisions = [...new Set(allDivisions)];
-  const sortedDivisions = sortDivisions(uniqueDivisions);
-
-  addDivisionList(sortedDivisions);
-}
-
-// Call it
-processFilterEvent();
-
-// Add list of years in that continual event to the filter option
-function addYearList(availableYears) {
-  availableYears.reverse();
-  const yearSelect = document.getElementById("year");
-  yearSelect.innerHTML = "";
-  const newOption = document.createElement("option");
-  newOption.textContent = "All Years";
-  newOption.value = "All Years";
-  yearSelect.appendChild(newOption);
-  availableYears.forEach((year) => {
-    const newOption = document.createElement("option");
-    newOption.textContent = year;
-    newOption.value = year;
-    yearSelect.appendChild(newOption);
-  });
-}
-
-// Add list of divisions in that continual event to the filter option
-function addDivisionList(divisions) {
-  const divisionSelect = document.getElementById("division");
-  divisionSelect.innerHTML = "";
-  const newOption = document.createElement("option");
-  newOption.textContent = "All Divisions";
-  newOption.value = "All Divisions";
-  divisionSelect.appendChild(newOption);
-  divisions.forEach((division) => {
-    const newOption = document.createElement("option");
-    newOption.textContent = division;
-    newOption.value = division;
-    divisionSelect.appendChild(newOption);
-  });
-}
-
-// When Year Filter is selected-----------------------------
-const yearSelect = document.getElementById("year");
-
-yearSelect.addEventListener("change", function () {
-  const selectedYear = yearSelect.value;
-  console.log("The currently selected year is:", selectedYear);
-  if (selectedYear === "All Years") {
-    console.log("Showing data for all years.");
-  } else {
-    console.log(`Filtering data for the year ${selectedYear}.`);
-  }
-});
-
-console.log(yearSelect.value);
-
-// When Division Filter is selected-----------------------------
-const divisionSelect = document.getElementById("division");
-
-divisionSelect.addEventListener("change", function () {
-  const selectedDivision = divisionSelect.value;
-  console.log("The currently selected division is:", selectedDivision);
-  if (selectedDivision === "All Divisions") {
-    console.log("Showing data for all divisions.");
-  } else {
-    console.log(`Filtering data for the division ${selectedDivision}.`);
-  }
-});
-
-console.log(divisionSelect.value);
-
 // --------------------------------------------------------------------------------------------------------------------------
 //
 //                                               CODES FOR VISUALIZATION BUTTON CLICKED
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-// Manage current active button for viz section
-// --- Placeholder Visualization Functions ---
-// These functions will contain the actual ECharts rendering logic.
-function renderParticipantsTrend() {
-  getContinualEventsParticipants(continualId).then((data) => {
-    const title = {
-      text:
-        "Participants Trend " +
-        data[0].year +
-        " - " +
-        data[data.length - 1].year,
-    };
-    const legend = {
-      data: ["Participants"],
-    };
-    const yearList = data.map((event) => {
-      return event.year;
-    });
-    const xAxis = {
-      data: yearList,
-      name: "Year",
-    };
-    const yAxis = {
-      name: "Total Participants", // Set your Y-axis label here
-      nameLocation: "middle", // Position the label in the middle of the axis
-      nameGap: 50, // Adjust the distance between the label and the axis line
-      axisLabel: {
-        formatter: "{value}", // Optional: Format the individual axis tick labels
-      },
-    };
-    const playerCounts = data.map((event) => {
-      return event.player_count;
-    });
-    const series = [
-      {
-        name: "Participants",
-        data: playerCounts,
-        type: "line",
-      },
-    ];
-    const tooltip = {
-      // Formats the value for all series
-      valueFormatter: (value) => {
-        if (value === null || value === undefined) {
-          return "-";
-        }
-        return value.toLocaleString() + " players";
-      },
-    };
-    createChart(title, legend, xAxis, yAxis, series, tooltip);
-  });
-}
-
-function renderPrizeMoneyAnalysis() {
-  getContinualEventsWithPrizes(continualId).then((data) => {
-    const title = {
-      text: "Total Prize " + data[0].year + " - " + data[data.length - 1].year,
-    };
-    const legend = {
-      data: ["Total Prize"],
-    };
-    const yearList = data.map((event) => {
-      return event.year;
-    });
-    const xAxis = {
-      data: yearList,
-      name: "Year",
-    };
-    const yAxis = {
-      type: "value",
-      name: "Total Prize Money", // Set your Y-axis label here
-      nameLocation: "middle", // Position the label in the middle of the axis
-      nameGap: 50, // Adjust the distance between the label and the axis line
-      axisLabel: {
-        formatter: "$ {value}", // Optional: Format the individual axis tick labels
-      },
-    };
-    const totalPrize = data.map((event) => {
-      return event.total_prize;
-    });
-    const series = [
-      {
-        name: "Total Prize",
-        data: totalPrize,
-        type: "line",
-      },
-    ];
-    const tooltip = {
-      // Formats the value for all series
-      valueFormatter: (value) => {
-        if (value === null || value === undefined) {
-          return "-";
-        }
-        return "$" + value.toLocaleString();
-      },
-    };
-    createChart(title, legend, xAxis, yAxis, series, tooltip);
-  });
-}
-
-function renderAverageRatings() {
-  getContinualEventsAverageRatingByDivision(continualId).then((data) => {
-    if (!data || data.length === 0) {
-      console.error("No rating data available");
-      return;
-    }
-
-    // Sort divisions using your existing sortDivisions function
-    const sortedData = data.sort((a, b) => {
-      const indexA = customOrder.indexOf(a.division);
-      const indexB = customOrder.indexOf(b.division);
-      if (indexA === -1 && indexB === -1)
-        return a.division.localeCompare(b.division);
-      if (indexA === -1) return 1;
-      if (indexB === -1) return -1;
-      return indexA - indexB;
-    });
-
-    const title = {
-      text: "Average Event Rating by Division",
-    };
-
-    const legend = {
-      data: ["Average Rating"],
-    };
-
-    const divisionList = sortedData.map((item) => item.division);
-
-    const xAxis = {
-      type: "category",
-      data: divisionList,
-      name: "Division",
-      axisLabel: {
-        rotate: 45, // Rotate labels if there are many divisions
-      },
-    };
-
-    const yAxis = {
-      type: "value",
-      name: "Average Rating",
-      nameLocation: "middle",
-      nameGap: 50,
-      axisLabel: {
-        formatter: "{value}",
-      },
-    };
-
-    const avgRatings = sortedData.map((item) => item.avg_rating);
-
-    const series = [
-      {
-        name: "Average Rating",
-        data: avgRatings,
-        type: "bar",
-        itemStyle: {
-          color: "#5470c6",
-        },
-      },
-    ];
-
-    const tooltip = {
-      trigger: "axis",
-      axisPointer: {
-        type: "shadow",
-      },
-      formatter: function (params) {
-        const dataIndex = params[0].dataIndex;
-        const item = sortedData[dataIndex];
-        return (
-          `<strong>${item.division}</strong><br/>` +
-          `Average Rating: ${item.avg_rating}<br/>` +
-          `Total Players: ${item.player_count.toLocaleString()}`
-        );
-      },
-    };
-
-    createChart(title, legend, xAxis, yAxis, series, tooltip);
-  });
-}
-
-function renderDiffRating() {
-  getContinualEventsDiffRating(continualId).then((data) => {
-    if (!data || data.length === 0) {
-      console.error("No rating difference data available");
-      return;
-    }
-
-    const title = {
-      text:
-        "Difference in Rating " +
-        data[0].year +
-        " - " +
-        data[data.length - 1].year,
-    };
-
-    const legend = {
-      data: ["Average Rating Difference"],
-    };
-
-    const yearList = data.map((event) => {
-      return event.year;
-    });
-
-    const xAxis = {
-      data: yearList,
-      name: "Year",
-    };
-
-    const yAxis = {
-      type: "value",
-      name: "Average Rating Difference",
-      nameLocation: "middle",
-      nameGap: 50,
-      axisLabel: {
-        formatter: "{value}",
-      },
-    };
-
-    const ratingDifferences = data.map((event) => {
-      return event.avg_diff_rating;
-    });
-
-    const series = [
-      {
-        name: "Average Rating Difference",
-        data: ratingDifferences,
-        type: "line",
-      },
-    ];
-
-    const tooltip = {
-      trigger: "axis",
-      axisPointer: {},
-      formatter: null,
-      valueFormatter: (value) => {
-        if (value === null || value === undefined) {
-          return "-";
-        }
-        return value.toFixed(2) + " points";
-      },
-    };
-
-    createChart(title, legend, xAxis, yAxis, series, tooltip);
-  });
-}
-
-// --- Main Handler Function ---
-function handleVizButtonClick(buttonText) {
+export function handleVizButtonClick(buttonText) {
   // The 'buttonText' determines which specific visualization function to call.
   switch (buttonText) {
     case "Participants Trend":
-      renderParticipantsTrend();
+      renderParticipantsTrend(pastEventsList);
       break;
 
     case "Prize Money Analysis":
-      renderPrizeMoneyAnalysis();
+      renderPrizeMoneyAnalysis(pastEventsList);
       break;
 
     case "Average Ratings":
-      renderAverageRatings();
+      renderAverageRatings(continualId);
       break;
 
     case "Difference in Rating":
-      renderDiffRating();
+      renderDiffRating(continualId);
       break;
 
     default:
       console.error("Unknown visualization button:", buttonText);
-  }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  const vizButtons = document.querySelectorAll(".viz-button");
-
-  // 1. Add click handlers for interaction
-  vizButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      // Remove active class from all
-      vizButtons.forEach((btn) => btn.classList.remove("active"));
-
-      // Set the clicked button as active
-      this.classList.add("active");
-
-      // Get the text and execute the handler
-      const buttonText = this.textContent.trim();
-      handleVizButtonClick(buttonText);
-    });
-  });
-});
-
-function renderSelectedVizButton() {
-  const initialActiveButton = document.querySelector(".viz-button.active");
-
-  if (initialActiveButton) {
-    const initialButtonText = initialActiveButton.textContent.trim();
-    handleVizButtonClick(initialButtonText);
-  } else if (vizButtons.length > 0) {
-    // If no button has 'active' set in HTML, activate the first one by default
-    const firstButton = vizButtons[0];
-    firstButton.classList.add("active");
-    console.log(
-      `No active button found. Defaulting to: ${firstButton.textContent.trim()}`
-    );
-    handleVizButtonClick(firstButton.textContent.trim());
   }
 }
