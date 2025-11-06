@@ -142,13 +142,6 @@ function renderEvent() {
     "Date " + selectedEvent.start_date;
   const tierBadge = getTierBadge(selectedEvent.tier);
   document.getElementById("event-tier").innerHTML = tierBadge;
-  const websiteLink = document.getElementById("event-website");
-  if (selectedEvent.website_url) {
-    websiteLink.href = selectedEvent.website_url;
-    websiteLink.style.display = "flex";
-  } else {
-    websiteLink.style.display = "none";
-  }
   document.getElementById("event-city").textContent = selectedEvent.city;
   document.getElementById("event-state").textContent = selectedEvent.state;
   document.getElementById("event-country").textContent = selectedEvent.country;
