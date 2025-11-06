@@ -115,8 +115,22 @@ export async function updateEventDateRange(id) {
 // Update Table Headers for Past Events
 // Render Past Events Table
 
-export function relocatePaginationControls(paginationContainer, newParent) {
-  if (paginationContainer && newParent) {
+export function relocatePaginationControls(
+  paginationContainer,
+  newParent,
+  buttonContainer
+) {
+  if (paginationContainer && buttonContainer && newParent) {
+    newParent.insertBefore(paginationContainer, buttonContainer);
+  } else {
     newParent.appendChild(paginationContainer);
   }
+}
+
+export function activateBackToAllEventsBtn() {
+  const btn = document.getElementById("all-events-btn");
+  btn.addEventListener("click", () => {
+    document.getElementById('btn-container').style.display = 'none';
+    window.location.reload();
+  });
 }

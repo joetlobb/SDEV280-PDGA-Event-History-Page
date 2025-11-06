@@ -464,6 +464,7 @@ td:first-child {
 }
 
 tbody tr {
+    height: 47px;
     cursor: pointer;
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
@@ -474,11 +475,6 @@ tbody tr:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1;
-}
-
-tr.empty-row {
-    height: 46px;
-    /* Same as regular rows */
 }
 
 tr.empty-row:hover {
@@ -572,6 +568,10 @@ tbody tr.empty-row:hover::before {
 }
 
 /* Past Events Table */
+.past-events-table {
+    display: none;
+}
+
 .past-events-table th:first-child,
 .past-events-table td:first-child {
     width: 80px;
@@ -593,6 +593,25 @@ tbody tr.empty-row:hover::before {
 .past-events-table td:last-child {
     width: 100px;
     text-align: right;
+}
+
+.btn-container {
+    display: none;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-container button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+
+        background: #0066cc;
+    color: white;
+    border-color: #0066cc;
 }
 
 /* Pagination Styles */

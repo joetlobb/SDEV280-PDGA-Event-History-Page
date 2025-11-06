@@ -39,7 +39,7 @@
     </div>
 
     <!-- Filter Section -->
-    <div class="filter-section">
+    <div class="filter-section" id="filter-section">
       <h2>Filter Events</h2>
       <div class="filter-grid">
         <div class="filter-item">
@@ -162,7 +162,7 @@
     <div class="events-table past-events-table" id="past-events-table">
       <h2>Past Events</h2>
       <!-- <div class="table-container"> -->
-      <table class="past-events-table">
+      <table>
         <thead>
           <tr>
             <th>Year</th>
@@ -176,6 +176,10 @@
           <!-- Data will be inserted here -->
         </tbody>
       </table>
+    </div>
+
+    <div class="btn-container" id="btn-container">
+      <button id="all-events-btn">Back to All Events</button>
     </div>
 
     <!-- Events Table -->
@@ -196,7 +200,7 @@
           <!-- Data will be inserted here by JavaScript -->
         </tbody>
       </table>
-      <div class="pagination-container">
+      <div class="pagination-container" id="pagination-container">
         <div class="pagination-info">
           Showing <span id="startEntry">1</span> to
           <span id="endEntry">10</span> of

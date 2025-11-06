@@ -16,6 +16,7 @@ import {
   updateStatCards,
   updateEventDateRange,
   relocatePaginationControls,
+  activateBackToAllEventsBtn,
 } from "./functions/domHandler.js";
 import {
   initPagination,
@@ -71,6 +72,7 @@ let continualId;
 
   recentEventsList = sortedLatestEvents;
   initPagination(recentEventsList, renderTable);
+  activateBackToAllEventsBtn()
 })();
 
 function sortingEventsByDate(events) {
@@ -275,10 +277,16 @@ function renderTable() {
       renderEvent();
 
       // move pagination button to the past events table
-      const paginationContainer = document.querySelector(".pagination-container");
-      const newParent = document.getElementById("past-events-table");
+      const paginationContainer = document.getElementById(
+        "pagination-container"
+      );
+      // const buttonContainer = document.getElementById('btn-container');
+      // const parentOfButtonContainer = buttonContainer ? buttonContainer.parentElement : null;
+      const newParent = document.getElementById('past-events-table')
       relocatePaginationControls(paginationContainer, newParent);
-      document.getElementById('events-table').style.display = 'none';
+      document.getElementById("past-events-table").style.display = 'block';
+      document.getElementById('btn-container').style.display = 'flex';
+      document.getElementById("events-table").style.display = "none";
 
       initPagination(pastEventsList, renderPastEventsTable);
     });
@@ -318,7 +326,7 @@ function renderPastEventsTable() {
     `;
 
     const row = createClickableRow(rowContent, () => {
-      window.open(item.website_url, '_blank');
+      window.open(item.website_url, "_blank");
     });
     tableBody.appendChild(row);
   });
