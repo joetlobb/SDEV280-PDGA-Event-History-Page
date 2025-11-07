@@ -5,7 +5,7 @@ import { getContinualEventsAverageRatingByDivision, getContinualEventsDiffRating
 export function renderParticipantsTrend(data) {
   const title = {
     text:
-      "Participants Trend " + data[0].year + " - " + data[data.length - 1].year,
+      "Participants Trend " + data[data.length - 1].year + " - " + data[0].year
   };
   const legend = {
     data: ["Participants"],
@@ -49,7 +49,7 @@ export function renderParticipantsTrend(data) {
 
 export function renderPrizeMoneyAnalysis(data) {
   const title = {
-    text: "Total Prize " + data[0].year + " - " + data[data.length - 1].year,
+    text: "Total Prize " + data[data.length - 1].year + " - " + data[0].year
   };
   const legend = {
     data: ["Total Prize"],

@@ -34,7 +34,7 @@ header {
   height: 40px;
 }
 
-.logo > img {
+.logo>img {
   height: 100%;
 }
 
@@ -421,9 +421,7 @@ nav a:hover {
 
 .division-section th,
 .division-section td {
-  width: auto;
-      text-align: center;
-    padding: 8px;
+  padding: 8px;
 }
 
 .division-btn-container {
@@ -723,24 +721,38 @@ tbody tr.empty-row:hover::before {
   display: none;
 }
 
-.division-card th:first-of-type, td:first-of-type {
-    width: 70px;
-    text-align: left;
-}
-
-.division-card th:nth-of-type(3), td:nth-of-type(3) {
-    width: 100px;
-}
-
 .division-card tr {
-    height: 33px;
+  height: 33px;
 }
 
 .division-card table:nth-of-type(2) {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .division-card {
-    padding-bottom: 10px;
+  padding-bottom: 10px;
 }
 
+.division-card th:last-of-type,
+.division-card td:last-of-type {
+  text-align: center;
+}
+
+.division-section th:first-of-type,
+.division-section td:first-of-type {
+  width: 70px;
+}
+
+.division-section th:nth-of-type(2),
+.division-section td:nth-of-type(2) {
+  text-align: center;
+}
+
+.division-section th:nth-of-type(3),
+.division-section td:nth-of-type(3) {
+  width: 90px;
+}
+
+.extra-one {
+  grid-column: 2 / 3;
+}

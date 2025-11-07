@@ -239,3 +239,18 @@ export async function getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds
     console.error("Error:", error);
   }
 }
+
+export async function getEventsResultByPdgaEventIds(pdgaEventIds) {
+  try {
+    const url = `https://coderelic.greenriverdev.com/query_sprint3.php?queryType=getEventsResultByPdgaEventIds&pdgaEventIds=${pdgaEventIds}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
