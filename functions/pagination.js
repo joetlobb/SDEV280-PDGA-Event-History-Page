@@ -62,16 +62,76 @@ export function updatePaginationControls() {
   document.getElementById("nextBtn").disabled = currentPage === totalPages;
   document.getElementById("lastBtn").disabled = currentPage === totalPages;
 
-  // Generate page numbers
+  // Generate page numbers with limited range
   const pageNumbersDiv = document.getElementById("pageNumbers");
   pageNumbersDiv.innerHTML = "";
 
-  for (let i = 1; i <= totalPages; i++) {
+  // Show max 7 page buttons at a time
+  const maxButtons = 7;
+  let startPage, endPage;
+
+  if (totalPages <= maxButtons) {
+    // Show all pages if total is less than max
+    startPage = 1;
+    endPage = totalPages;
+  } else {
+    // Calculate range around current page
+    const halfRange = Math.floor(maxButtons / 2);
+    
+    if (currentPage <= halfRange) {
+      // Near the start
+      startPage = 1;
+      endPage = maxButtons;
+    } else if (currentPage >= totalPages - halfRange) {
+      // Near the end
+      startPage = totalPages - maxButtons + 1;
+      endPage = totalPages;
+    } else {
+      // In the middle
+      startPage = currentPage - halfRange;
+      endPage = currentPage + halfRange;
+    }
+  }
+
+  // Add first page and ellipsis if needed
+  if (startPage > 1) {
+    const firstBtn = document.createElement("button");
+    firstBtn.className = "pagination-btn";
+    firstBtn.textContent = "1";
+    firstBtn.setAttribute('data-page', 1);
+    pageNumbersDiv.appendChild(firstBtn);
+
+    if (startPage > 2) {
+      const ellipsis = document.createElement("span");
+      ellipsis.textContent = "...";
+      ellipsis.style.padding = "0 10px";
+      pageNumbersDiv.appendChild(ellipsis);
+    }
+  }
+
+  // Add page number buttons
+  for (let i = startPage; i <= endPage; i++) {
     const pageBtn = document.createElement("button");
     pageBtn.className = "pagination-btn" + (i === currentPage ? " active" : "");
     pageBtn.textContent = i;
     pageBtn.setAttribute('data-page', i);
     pageNumbersDiv.appendChild(pageBtn);
+  }
+
+  // Add ellipsis and last page if needed
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const ellipsis = document.createElement("span");
+      ellipsis.textContent = "...";
+      ellipsis.style.padding = "0 10px";
+      pageNumbersDiv.appendChild(ellipsis);
+    }
+
+    const lastBtn = document.createElement("button");
+    lastBtn.className = "pagination-btn";
+    lastBtn.textContent = totalPages;
+    lastBtn.setAttribute('data-page', totalPages);
+    pageNumbersDiv.appendChild(lastBtn);
   }
 }
 
@@ -172,4 +232,3 @@ export function setupPageSizeSelector(selectorId, renderCallback) {
     });
   }
 }
-
