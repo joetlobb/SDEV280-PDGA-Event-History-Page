@@ -1,8 +1,21 @@
+import {
+  getAllEventsID,
+  getAllEventsDetails,
+} from "./functions/queries.js";
+import {
+  fillEmptyRows, 
+} from "./functions/domHandler.js";
+import {
+  initPagination,
+  getPaginationInfo,
+  getCurrentPageData,
+  updatePaginationInfo,
+  updatePaginationControls
+} from "./functions/pagination.js";
+import { processTierData } from "./functions/functions.js";
+
 let allData = [];
-let selectedEvent;
-let continualId;
-let currentPage = 1;
-let pageSize = 10;
+let originalData = []; // Store original unfiltered data
 
 // --------------------------------------------------------------------------------------------------------------------------
 //
@@ -10,48 +23,73 @@ let pageSize = 10;
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-async function getAllRecentEventsContinualList() {
+(async function processAllEventsData() {
+    console.log('Starting to load data...');
+    
     try {
-        const url = `https://coderelic.greenriverdev.com/query.php?queryType=getAllRecentEventsContinualList`;
-        const response = await fetch(url);
+        const allEventsId = await getAllEventsID();
+        const allEventsDetails = await getAllEventsDetails();
+        
+        console.log('Events ID loaded:', allEventsId.length);
+        console.log('Events Details loaded:', allEventsDetails.length);
+        
+        const allEventsData = [];
+        
+        allEventsDetails.forEach(event => {
+            const newId = allEventsId.find(e => e.pdga_event_id === event.pdga_event_id)?.id || null;
+            const newName = allEventsId.find(e => e.pdga_event_id === event.pdga_event_id)?.name || null;
+            allEventsData.push({
+                ...event,
+                id: newId,
+                name: newName
+            });
+        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Sort all events by date (newest first)
+        const sortedAllEvents = allEventsData.sort((a, b) => {
+            const dateA = new Date(a.start_date);
+            const dateB = new Date(b.start_date);
+            return dateB - dateA;
+        });
+
+        originalData = sortedAllEvents; // Store original data
+        allData = sortedAllEvents;
+        
+        console.log('Data loaded successfully:', allData.length, 'total events');
+        
+        // Get search query from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('q');
+        
+        console.log('Search query from URL:', searchQuery);
+        
+        if (searchQuery && searchQuery.trim() !== '') {
+            // Display search query in header
+            const searchQueryDisplay = document.getElementById('searchQueryDisplay');
+            if (searchQueryDisplay) {
+                searchQueryDisplay.textContent = searchQuery;
+                console.log('Updated search query display');
+            } else {
+                console.error('searchQueryDisplay element not found');
+            }
+            
+            // Fill the search input with the current query
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = searchQuery;
+                console.log('Updated search input value');
+            } else {
+                console.error('searchInput element not found');
+            }
+            
+            // Perform search
+            performSearch(searchQuery);
+        } else {
+            console.log('No search query, redirecting to index.html');
+            window.location.href = 'index.html';
         }
-
-        return await response.json();
     } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-(async function onPageLoad() {
-    // Load all events data
-    let data = await getAllRecentEventsContinualList();
-    allData = data;
-    
-    // Get search query from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchQuery = urlParams.get('q');
-    
-    if (searchQuery) {
-        // Display search query in header
-        const searchQueryDisplay = document.getElementById('searchQueryDisplay');
-        if (searchQueryDisplay) {
-            searchQueryDisplay.textContent = searchQuery;
-        }
-        
-        // Fill the search input with the current query
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.value = searchQuery;
-        }
-        
-        // Perform search
-        performSearch(searchQuery);
-    } else {
-        // No search query, redirect to index
-        window.location.href = 'index.html';
+        console.error('Error loading data:', error);
     }
 })();
 
@@ -69,49 +107,72 @@ if (searchForm && searchInput) {
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const query = searchInput.value.trim();
+        console.log('Search form submitted with query:', query);
         if (query) {
             // Reload page with new search query
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         }
     });
+    console.log('Search form listener attached');
+} else {
+    console.error('Search form or input not found');
 }
 
 function performSearch(query) {
-    if (!allData || allData.length === 0) {
+    console.log('=== performSearch called ===');
+    console.log('Query:', query);
+    console.log('Original data length:', originalData.length);
+    
+    if (!originalData || originalData.length === 0) {
         console.error('No data available to search');
         return;
     }
     
     // Filter the data based on the query
-    const filteredData = allData.filter(event => 
-        event.name.toLowerCase().includes(query.toLowerCase()) ||
-        event.city.toLowerCase().includes(query.toLowerCase()) ||
-        event.state.toLowerCase().includes(query.toLowerCase()) ||
-        event.country.toLowerCase().includes(query.toLowerCase()) ||
-        (event.tier && event.tier.toLowerCase().includes(query.toLowerCase()))
-    );
+    const filteredData = originalData.filter(event => {
+        const searchQuery = query.toLowerCase();
+        return (
+            (event.name && event.name.toLowerCase().includes(searchQuery)) ||
+            (event.event_name && event.event_name.toLowerCase().includes(searchQuery)) ||
+            (event.city && event.city.toLowerCase().includes(searchQuery)) ||
+            (event.state && event.state.toLowerCase().includes(searchQuery)) ||
+            (event.country && event.country.toLowerCase().includes(searchQuery)) ||
+            (event.tier && event.tier.toLowerCase().includes(searchQuery))
+        );
+    });
+    
+    console.log(`Search results for "${query}":`, filteredData.length, 'events');
     
     // Update total results display
     const totalResults = document.getElementById('totalResults');
     if (totalResults) {
         totalResults.textContent = filteredData.length;
+        console.log('Updated total results display');
+    } else {
+        console.error('totalResults element not found');
     }
     
-    // Use filtered data for the table
+    // Update allData with filtered results
     allData = filteredData;
-    currentPage = 1;
-    renderTable();
+    console.log('Updated allData with filtered results');
     
-    // Log results
-    console.log(`Search results for "${query}": ${filteredData.length} events found`);
+    // Initialize pagination with filtered data (pageSize is 10 by default in pagination.js)
+    console.log('Calling initPagination...');
+    initPagination(allData, renderTable);
+    
+    // renderTable is called automatically by initPagination, no need to call it again
 }
 
 // Back to events button
 const backToEvents = document.getElementById('backToEvents');
 if (backToEvents) {
     backToEvents.addEventListener('click', () => {
+        console.log('Back to events clicked');
         window.location.href = 'index.html';
     });
+    console.log('Back to events listener attached');
+} else {
+    console.error('backToEvents button not found');
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
@@ -121,188 +182,95 @@ if (backToEvents) {
 // --------------------------------------------------------------------------------------------------------------------------
 
 function renderTable() {
+    console.log('=== renderTable called ===');
+    
     const tableBody = document.getElementById('resultsTableBody');
     
     if (!tableBody) {
-        console.error('Table body not found');
+        console.error('Table body not found!');
         return;
     }
     
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, allData.length);
+    console.log('Table body found');
+    console.log('allData length:', allData.length);
+    
+    const { currentPage, pageSize, totalItems } = getPaginationInfo();
+    console.log('Current page:', currentPage);
+    console.log('Page size:', pageSize);
+    console.log('Total items in pagination:', totalItems);
+    
+    // getCurrentPageData returns an object with {data, startIndex, endIndex}
+    const pageDataObj = getCurrentPageData();
+    const currentPageData = pageDataObj.data;
+    console.log('Current page data length:', currentPageData.length);
 
-    // Clear existing rows
+    // Clear existing rows - make sure table is completely empty
     tableBody.innerHTML = '';
+    console.log('Table cleared');
 
-    // Add rows for current page
-    for (let i = startIndex; i < endIndex; i++) {
-        const item = allData[i];
-
-        // Convert tier codes
-        switch (item.tier) {
-            case 'M':
-                item.tierCode = 'tier-m'
-                item.tier = 'Major'
-                break;
-            case 'NT':
-                item.tierCode = 'tier-es'
-                item.tier = 'Elite'
-                break;
-            case 'A':
-                item.tierCode = 'tier-a'
-                item.tier = 'Tier-A'
-                break;
-            case 'B':
-                item.tierCode = 'tier-b'
-                item.tier = 'Tier-B'
-                break;
-            case 'C':
-                item.tierCode = 'tier-c'
-                item.tier = 'Tier-C'
-                break;
-            case 'XA':
-                item.tierCode = 'tier-xa'
-                item.tier = 'Tier-XA'
-                break;
-            case 'XB':
-                item.tierCode = 'tier-xb'
-                item.tier = 'Tier-XB'
-                break;
-            case 'XC':
-                item.tierCode = 'tier-xc'
-                item.tier = 'Tier-XC'
-                break;
-            case 'XM':
-                item.tierCode = 'tier-xm'
-                item.tier = 'Tier-XM'
-                break;
-            default:
-                break;
-        }
-
+    // Check if we have data to display
+    if (allData.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.start_date}</td>
-            <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
-            <td>${item.city}</td>
-            <td>${item.state}</td>
-            <td>${item.country}</td>
+            <td colspan="6" style="text-align: center; padding: 20px; font-size: 16px;">
+                No results found for your search. Try different keywords.
+            </td>
         `;
-
-        row.addEventListener('click', () => {
-            selectedEvent = item;
-            continualId = item.id;
-            // You can add event detail functionality here if needed
-        });
-
         tableBody.appendChild(row);
+        console.log('No results message added');
+        return;
     }
 
-    // Fill empty rows
-    const rowsToFill = pageSize - (endIndex - startIndex);
-    for (let i = 0; i < rowsToFill; i++) {
-        const emptyRow = document.createElement('tr');
-        emptyRow.className = 'empty-row';
-        emptyRow.innerHTML = `
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
+    if (currentPageData.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td colspan="6" style="text-align: center; padding: 20px; font-size: 16px;">
+                No data for current page.
+            </td>
         `;
-        tableBody.appendChild(emptyRow);
+        tableBody.appendChild(row);
+        console.log('No data for page message added');
+        return;
     }
 
+    // Add rows for current page
+    currentPageData.forEach((item, index) => {
+        console.log(`Processing item ${index}:`, item.name);
+        
+        const processedItem = processTierData(item);
+        
+        const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.innerHTML = `
+            <td>${processedItem.name || 'N/A'}</td>
+            <td>${processedItem.start_date || 'N/A'}</td>
+            <td><span class="tier-badge ${processedItem.tierCode || ''}">${processedItem.tier || 'N/A'}</span></td>
+            <td>${processedItem.city || 'N/A'}</td>
+            <td>${processedItem.state || 'N/A'}</td>
+            <td>${processedItem.country || 'N/A'}</td>
+        `;
+        
+        row.addEventListener('click', () => {
+            selectedEvent = processedItem;
+            continualId = processedItem.id;
+            console.log('Event clicked:', processedItem.name);
+        });
+        
+        tableBody.appendChild(row);
+    });
+
+    console.log(`Added ${currentPageData.length} rows to table`);
+
+    // Fill empty rows if needed
+    fillEmptyRows(tableBody, currentPageData.length, pageSize);
+    console.log('Empty rows filled');
+
+    // Update pagination
     updatePaginationInfo();
-    updatePaginationControls();
-}
-
-// --------------------------------------------------------------------------------------------------------------------------
-//
-//                                               PAGINATION
-//
-// --------------------------------------------------------------------------------------------------------------------------
-
-function updatePaginationInfo() {
-    const startEntry = (currentPage - 1) * pageSize + 1;
-    const endEntry = Math.min(currentPage * pageSize, allData.length);
-
-    const startEntryEl = document.getElementById('startEntry');
-    const endEntryEl = document.getElementById('endEntry');
-    const totalEntriesEl = document.getElementById('totalEntries');
+    console.log('Pagination info updated');
     
-    if (startEntryEl) startEntryEl.textContent = allData.length > 0 ? startEntry : 0;
-    if (endEntryEl) endEntryEl.textContent = endEntry;
-    if (totalEntriesEl) totalEntriesEl.textContent = allData.length;
-}
-
-function updatePaginationControls() {
-    const totalPages = Math.ceil(allData.length / pageSize);
-
-    const firstBtn = document.getElementById('firstBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const lastBtn = document.getElementById('lastBtn');
+    updatePaginationControls(allData, renderTable);
+    console.log('Pagination controls updated');
     
-    if (firstBtn) firstBtn.disabled = currentPage === 1;
-    if (prevBtn) prevBtn.disabled = currentPage === 1;
-    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
-    if (lastBtn) lastBtn.disabled = currentPage === totalPages;
-
-    const pageNumbersDiv = document.getElementById('pageNumbers');
-    if (pageNumbersDiv) {
-        pageNumbersDiv.innerHTML = '';
-
-        for (let i = 1; i <= totalPages; i++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
-            pageBtn.textContent = i;
-            pageBtn.onclick = () => {
-                currentPage = i;
-                renderTable();
-            };
-            pageNumbersDiv.appendChild(pageBtn);
-        }
-    }
-}
-
-// Pagination event listeners
-const firstBtn = document.getElementById('firstBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const lastBtn = document.getElementById('lastBtn');
-
-if (firstBtn) {
-    firstBtn.addEventListener('click', () => {
-        currentPage = 1;
-        renderTable();
-    });
-}
-
-if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderTable();
-        }
-    });
-}
-
-if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-        const totalPages = Math.ceil(allData.length / pageSize);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderTable();
-        }
-    });
-}
-
-if (lastBtn) {
-    lastBtn.addEventListener('click', () => {
-        currentPage = Math.ceil(allData.length / pageSize);
-        renderTable();
-    });
+    console.log('=== renderTable complete ===');
 }

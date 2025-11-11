@@ -158,6 +158,27 @@ nav a:hover {
   background-color: white;
 }
 
+.filter-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.clear-filters-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.clear-filters-btn:hover {
+  background-color: #5a6268;
+}
+
 /* Statistics Cards */
 .stats-grid {
   display: grid;
