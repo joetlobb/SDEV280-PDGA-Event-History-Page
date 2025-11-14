@@ -1,5 +1,5 @@
 import { createChart } from "./domHandler.js";
-import { customOrder } from "./functions.js";
+import { customDivisionOrder } from "./functions.js";
 import { getContinualEventsAverageRatingByDivision, getContinualEventsDiffRating } from "./queries.js";
 
 export function renderParticipantsTrend(data) {
@@ -101,8 +101,8 @@ export function renderAverageRatings(continualId) {
 
     // Sort divisions using your existing sortDivisions function
     const sortedData = data.sort((a, b) => {
-      const indexA = customOrder.indexOf(a.division);
-      const indexB = customOrder.indexOf(b.division);
+      const indexA = customDivisionOrder.indexOf(a.division);
+      const indexB = customDivisionOrder.indexOf(b.division);
       if (indexA === -1 && indexB === -1)
         return a.division.localeCompare(b.division);
       if (indexA === -1) return 1;
