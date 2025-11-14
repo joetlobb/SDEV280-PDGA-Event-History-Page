@@ -38,27 +38,6 @@ let pastEventsList = [];
 let continualId;
 const eventDivisionsMap = new Map();
 
-// TO DO:
-// Wintertime Open
-// 87073
-// A
-// 2025-02-14
-// 47th Annual Wintertime Open (Pro Weekend) - Presen...
-// Pasadena
-// California
-// United States
-// 2025
-// 28
-// Wintertime Open
-// 87074
-// B
-// 2025-02-07
-// 47th Annual Wintertime Open (Amateur Weekend) - Pr...
-// Pasadena
-// California
-// United States
-// 2025
-
 // --------------------------------------------------------------------------------------------------------------------------
 //
 //                                               Initialization Code
@@ -121,10 +100,10 @@ const eventDivisionsMap = new Map();
   initPagination(recentEventsList, renderTable);
 
   // Initialize filter functionality
-  populateYearFilter();
-  populateDivisionFilter();
-  populateTierFilter();
-  populateCountryFilter();
+  populateYearsFilter();
+  populateDivisionsFilter();
+  populateTiersFilter();
+  populateCountriesFilter();
   initializeFilters();
 
   activateVizSelectionBtn();
@@ -152,7 +131,7 @@ function populateOptions(selectElement, optionsArray, defaultOptionText) {
 }
 
 // Populate year dropdown with unique years from allEventsData
-function populateYearFilter() {
+function populateYearsFilter() {
   const yearSelect = document.getElementById("year");
   const uniqueYears = [
     ...new Set(allEventsData.map((event) => event.year)),
@@ -163,7 +142,7 @@ function populateYearFilter() {
 }
 
 // Populate tier dropdown with unique tier from allEventsData
-function populateTierFilter() {
+function populateTiersFilter() {
   const tierSelect = document.getElementById("tier");
   const uniqueTiers = [
     ...new Set(sortTiers(allEventsData.map((event) => event.tier))),
@@ -174,7 +153,7 @@ function populateTierFilter() {
 }
 
 // Populate country dropdown with unique countries from allEventsData
-function populateCountryFilter() {
+function populateCountriesFilter() {
   const countrySelect = document.getElementById("country");
   const uniqueCountries = [
     ...new Set(allEventsData.map((event) => event.country)),
@@ -185,7 +164,7 @@ function populateCountryFilter() {
 }
 
 // Populate division dropdown with unique divisions from all events
-async function populateDivisionFilter() {
+async function populateDivisionsFilter() {
   const data = await getUniqueEventDivisions();
 
   const eventIdsContinualIdsMap = new Map()
