@@ -44,7 +44,7 @@ export function processTierData(item) {
   return item;
 }
 
-export const customOrder = [
+export const customDivisionOrder = [
   "MPO",
   "FPO",
   "MPG",
@@ -96,12 +96,12 @@ export const customOrder = [
 ];
 
 export function sortDivisions(divisions) {
-  // Sort based on custom order
+  // Sort based on custom Division Order
   return divisions.sort((a, b) => {
-    const indexA = customOrder.indexOf(a);
-    const indexB = customOrder.indexOf(b);
+    const indexA = customDivisionOrder.indexOf(a);
+    const indexB = customDivisionOrder.indexOf(b);
 
-    // If division not in custom order, put it at the end
+    // If division not in custom Division order, put it at the end
     if (indexA === -1 && indexB === -1) return a.localeCompare(b);
     if (indexA === -1) return 1;
     if (indexB === -1) return -1;
@@ -115,5 +115,31 @@ export function sortingEventsByDate(events) {
     const dateA = new Date(a.start_date);
     const dateB = new Date(b.start_date);
     return dateB - dateA;
+  });
+}
+
+export const customTierOrder = [
+  "Major",
+  "Elite",
+  "Tier-A",
+  "Tier-B",
+  "Tier-C",
+  "Tier-XA",
+  "Tier-XB",
+  "Tier-XC",
+  "Tier-XD",
+];
+
+export function sortTiers(tiers) {
+  // Sort based on custom tier Order
+  return tiers.sort((a, b) => {
+    const indexA = customTierOrder.indexOf(a);
+    const indexB = customTierOrder.indexOf(b);
+
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+
+    return indexA - indexB;
   });
 }
