@@ -167,28 +167,28 @@ function populateCountriesFilter() {
 async function populateDivisionsFilter() {
   const data = await getUniqueEventDivisions();
 
-  const eventIdsContinualIdsMap = new Map()
-  allEventsData.forEach(event => {
+  const eventIdsContinualIdsMap = new Map();
+  allEventsData.forEach((event) => {
     if (!eventIdsContinualIdsMap.get(event.pdga_event_id)) {
-      eventIdsContinualIdsMap.set(event.pdga_event_id, event.id)
+      eventIdsContinualIdsMap.set(event.pdga_event_id, event.id);
     }
   });
 
-  data.forEach(item => {
-    const continualId = eventIdsContinualIdsMap.get(item.pdga_event_id)    
+  data.forEach((item) => {
+    const continualId = eventIdsContinualIdsMap.get(item.pdga_event_id);
     const divisionsArray = eventDivisionsMap.get(continualId);
     if (!divisionsArray) {
-      eventDivisionsMap.set(continualId, [])
+      eventDivisionsMap.set(continualId, []);
     }
     if (divisionsArray && !divisionsArray.includes(item.division)) {
-      eventDivisionsMap.get(continualId).push(item.division)
+      eventDivisionsMap.get(continualId).push(item.division);
     }
-  })
+  });
 
   // Get unique and sorted divisions
-  const sortedDivisions = sortDivisions(
-    [...new Set(data.map(item => item.division))]
-  );
+  const sortedDivisions = sortDivisions([
+    ...new Set(data.map((item) => item.division)),
+  ]);
 
   const divisionSelect = document.getElementById("division");
   // Add unique countries to dropdown
@@ -236,8 +236,8 @@ function filterEvents() {
   // Filter by division - check if any event in the continual series had that division
   if (selectedDivision && selectedDivision !== "All Divisions") {
     filteredEvents = filteredEvents.filter((event) => {
-      const divisions = eventDivisionsMap.get(event.id)
-      return divisions && divisions.includes(selectedDivision)
+      const divisions = eventDivisionsMap.get(event.id);
+      return divisions && divisions.includes(selectedDivision);
     });
   }
 
@@ -390,10 +390,9 @@ function renderTable() {
       });
       pastEventsList = sortingEventsByDate(newUnsortedSelectedEvent);
 
-      const pdgaNumbers = [];
-      eventsResult.forEach((winner) => {
-        winner.pdga_number && pdgaNumbers.push(winner.pdga_number);
-      });
+      const pdgaNumbers = Array.from(
+        new Set(eventsResult.map((e) => +e.pdga_number))
+      );
 
       const winnersData = await getPlayersByPdgaNumbers(pdgaNumbers);
 

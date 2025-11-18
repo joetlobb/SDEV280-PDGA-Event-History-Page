@@ -72,29 +72,6 @@ export async function updateStatCards(pastEventsList) {
   }
 }
 
-// Update Past Events List with Player Names
-// export async function updatePastEventsList(id) {
-//   const pastEvents = await getPastEvents(id);
-
-//   const pdgaNumbers = [];
-
-//   pastEvents.forEach(event => {
-//     pdgaNumbers.push(event.pdga_number);
-//   })
-
-//   const playersData = await getPlayersByPdgaNumbers(pdgaNumbers);
-
-//   pastEvents.forEach(event => {
-//     const player = playersData.find(p => String(p.pdga_number) === String(event.pdga_number));
-//     event.player_name = player ? `${player.first_name} ${player.last_name}` : "N/A";
-//   });
-
-//   console.log(pastEvents);
-// }
-
-// Update Table Headers for Past Events
-// Render Past Events Table
-
 export function relocatePaginationControls(
   paginationContainer,
   newParent,
@@ -323,37 +300,21 @@ export function renderSelectedVizButton() {
 
 export function renderDivisionsWinner(eventsResult, pastEventsList) {
   const section = document.getElementById("division-section");
-  section.innerHTML = '';
+  section.innerHTML = "";
 
   // Get unique divisions and sort them
   const allDivisions = eventsResult.map((item) => item.division);
   const uniqueDivisionsSet = new Set(allDivisions);
   const divisionList = sortDivisions(Array.from(uniqueDivisionsSet));
 
-  // Get reigning winners
-  const reigningWinners = [];
-  eventsResult.forEach(event => {
-    const winner = event.player_name || 'N/A';
-    const division = event.division;
-    if (!reigningWinners.find(dw => dw.winner === winner)) {
-      reigningWinners.push({
-        division: division,
-        winner: winner,
-        winCount: 1
-      });
-    } else {
-      reigningWinners.find(dw => dw.winner === winner).winCount += 1;
-    }
-  })
-
   // Merge event details into eventsResult
-  const finalEventsResult = eventsResult.map(result => {
+  const finalEventsResult = eventsResult.map((result) => {
     const eventDetail = pastEventsList.find(
-      event => event.pdga_event_id === result.pdga_event_id
+      (event) => event.pdga_event_id === result.pdga_event_id
     );
     return {
       ...result,
-      ...eventDetail
+      ...eventDetail,
     };
   });
 
@@ -362,16 +323,39 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   const hasOneExtraCard = totalCards % 3 === 1;
 
   for (let i = 0; i < totalCards; i++) {
-    const updatedReigningWinners = reigningWinners.filter(dw => dw.division === divisionList[i]);
-    updatedReigningWinners.sort((a, b) => b.winCount - a.winCount);
-    const updatedDivisionWinners = finalEventsResult.filter(fe => fe.division === divisionList[i]);
+    // Get reigning winners
+    const divisionWinnerList = [...eventsResult].filter(
+      (e) => e.division === divisionList[i]
+    );
+
+    const reigningWinners = [];
+    divisionWinnerList.forEach((event) => {
+      const winner = event.player_name || "N/A";
+      const division = event.division;
+      if (!reigningWinners.find((dw) => dw.winner === winner)) {
+        reigningWinners.push({
+          division: division,
+          winner: winner,
+          winCount: 1,
+          pdga_number: event.pdga_number,
+        });
+      } else {
+        reigningWinners.find((dw) => dw.winner === winner).winCount += 1;
+      }
+    });
+
+    reigningWinners.sort((a, b) => b.winCount - a.winCount);
+
+    const updatedDivisionWinners = finalEventsResult.filter(
+      (fe) => fe.division === divisionList[i]
+    );
     updatedDivisionWinners.sort((a, b) => b.year - a.year);
 
     // Assign ranks with handling ties
-    const firstRankWinCount = updatedReigningWinners[0]?.winCount || 'N/A';
+    const firstRankWinCount = reigningWinners[0]?.winCount || "N/A";
     let currentWinCount = firstRankWinCount;
     let currentRank = 1;
-    updatedReigningWinners.forEach(dw => {
+    reigningWinners.forEach((dw) => {
       if (dw.winCount === currentWinCount) {
         dw.rank = currentRank;
       } else if (dw.winCount < currentWinCount) {
@@ -382,21 +366,23 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
     });
 
     // Format ranks
-    updatedReigningWinners.forEach(dw => {
+    reigningWinners.forEach((dw) => {
       if (dw.rank === 1) {
-        dw.rank = '1st';
+        dw.rank = "1st";
       } else if (dw.rank === 2) {
-        dw.rank = '2nd';
+        dw.rank = "2nd";
       } else if (dw.rank === 3) {
-        dw.rank = '3rd';
+        dw.rank = "3rd";
       } else {
-        dw.rank = dw.rank + 'th';
+        dw.rank = dw.rank + "th";
       }
     });
 
     // Create card content
     const cardContent = `
-    <div class="division-card ${hasOneExtraCard && i === totalCards - 1 ? 'extra-one' : ''}">
+    <div class="division-card ${
+      hasOneExtraCard && i === totalCards - 1 ? "extra-one" : ""
+    }">
             <h2>${divisionList[i]}</h2>
             <table>
               <thead>
@@ -408,19 +394,19 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
               </thead>
               <tbody>
                 <tr>
-                  <td>${updatedReigningWinners[0]?.rank || ''}</td>
-                  <td>${updatedReigningWinners[0]?.winner || ''}</td>
-                  <td>${updatedReigningWinners[0]?.winCount || ''}</td>
+                  <td>${reigningWinners[0]?.rank || ""}</td>
+                  <td>${reigningWinners[0]?.winner || ""}</td>
+                  <td>${reigningWinners[0]?.winCount || ""}</td>
                 </tr>
                 <tr>
-                  <td>${updatedReigningWinners[1]?.rank || ''}</td>
-                  <td>${updatedReigningWinners[1]?.winner || ''}</td>
-                  <td>${updatedReigningWinners[1]?.winCount || ''}</td>
+                  <td>${reigningWinners[1]?.rank || ""}</td>
+                  <td>${reigningWinners[1]?.winner || ""}</td>
+                  <td>${reigningWinners[1]?.winCount || ""}</td>
                 </tr>
                 <tr>
-                  <td>${updatedReigningWinners[2]?.rank || ''}</td>
-                  <td>${updatedReigningWinners[2]?.winner || ''}</td>
-                  <td>${updatedReigningWinners[2]?.winCount || ''}</td>
+                  <td>${reigningWinners[2]?.rank || ""}</td>
+                  <td>${reigningWinners[2]?.winner || ""}</td>
+                  <td>${reigningWinners[2]?.winCount || ""}</td>
                 </tr>
               </tbody>
             </table>
@@ -434,19 +420,37 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
               </thead>
               <tbody>
                 <tr>
-                  <td>${updatedDivisionWinners[0]?.year || ''}</td>
-                  <td>${updatedDivisionWinners[0]?.player_name || ''}</td>
-                  <td>${updatedDivisionWinners[0]?.cash ? `$${Number(updatedDivisionWinners[0].cash).toLocaleString()}` : ''}</td>
+                  <td>${updatedDivisionWinners[0]?.year || ""}</td>
+                  <td>${updatedDivisionWinners[0]?.player_name || ""}</td>
+                  <td>${
+                    updatedDivisionWinners[0]?.cash
+                      ? `$${Number(
+                          updatedDivisionWinners[0].cash
+                        ).toLocaleString()}`
+                      : ""
+                  }</td>
                 </tr>
                 <tr>
-                  <td>${updatedDivisionWinners[1]?.year || ''}</td>
-                  <td>${updatedDivisionWinners[1]?.player_name || ''}</td>
-                  <td>${updatedDivisionWinners[1]?.cash ? `$${Number(updatedDivisionWinners[1].cash).toLocaleString()}` : ''}</td>
+                  <td>${updatedDivisionWinners[1]?.year || ""}</td>
+                  <td>${updatedDivisionWinners[1]?.player_name || ""}</td>
+                  <td>${
+                    updatedDivisionWinners[1]?.cash
+                      ? `$${Number(
+                          updatedDivisionWinners[1].cash
+                        ).toLocaleString()}`
+                      : ""
+                  }</td>
                 </tr>
                 <tr>
-                  <td>${updatedDivisionWinners[2]?.year || ''}</td>
-                  <td>${updatedDivisionWinners[2]?.player_name || ''}</td>
-                  <td>${updatedDivisionWinners[2]?.cash ? `$${Number(updatedDivisionWinners[2].cash).toLocaleString()}` : ''}</td>
+                  <td>${updatedDivisionWinners[2]?.year || ""}</td>
+                  <td>${updatedDivisionWinners[2]?.player_name || ""}</td>
+                  <td>${
+                    updatedDivisionWinners[2]?.cash
+                      ? `$${Number(
+                          updatedDivisionWinners[2].cash
+                        ).toLocaleString()}`
+                      : ""
+                  }</td>
                 </tr>
               </tbody>
             </table>
