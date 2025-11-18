@@ -253,7 +253,7 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
 
   // Now safely assign values
   eventSection.style.display = "block";
-  eventName.textContent = selectedEvent.event_name || "Unknown Event";
+  eventName.textContent = selectedEvent.name || "Unknown Event";
 
   const tierBadge = getTierBadge(selectedEvent.tier);
   eventTier.innerHTML = tierBadge || "";
