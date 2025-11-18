@@ -1,16 +1,26 @@
 import { createChart } from "./domHandler.js";
 import { customDivisionOrder } from "./functions.js";
-import { getContinualEventsAverageRatingByDivision, getContinualEventsDiffRating } from "./queries.js";
+import {
+  getContinualEventsAverageRatingByDivision,
+  getContinualEventsDiffRating,
+} from "./queries.js";
 
 export function renderParticipantsTrend(data) {
+  const sortedData = [...data].sort((a, b) => {
+    return a.year - b.year;
+  });
+
   const title = {
     text:
-      "Participants Trend " + data[data.length - 1].year + " - " + data[0].year
+      "Participants Trend " +
+      sortedData[0].year +
+      " - " +
+      sortedData[sortedData.length - 1].year,
   };
   const legend = {
     data: ["Participants"],
   };
-  const yearList = data.map((event) => {
+  const yearList = sortedData.map((event) => {
     return event.year;
   });
   const xAxis = {
@@ -25,7 +35,7 @@ export function renderParticipantsTrend(data) {
       formatter: "{value}", // Optional: Format the individual axis tick labels
     },
   };
-  const playerCounts = data.map((event) => {
+  const playerCounts = sortedData.map((event) => {
     return event.players_count;
   });
   const series = [
@@ -48,13 +58,17 @@ export function renderParticipantsTrend(data) {
 }
 
 export function renderPrizeMoneyAnalysis(data) {
+  const sortedData = [...data].sort((a, b) => {
+    return a.year - b.year;
+  });
+
   const title = {
-    text: "Total Prize " + data[data.length - 1].year + " - " + data[0].year
+    text: "Total Prize " + sortedData[0].year + " - " + sortedData[sortedData.length - 1].year,
   };
   const legend = {
     data: ["Total Prize"],
   };
-  const yearList = data.map((event) => {
+  const yearList = sortedData.map((event) => {
     return event.year;
   });
   const xAxis = {
@@ -70,7 +84,7 @@ export function renderPrizeMoneyAnalysis(data) {
       formatter: "$ {value}", // Optional: Format the individual axis tick labels
     },
   };
-  const totalPrize = data.map((event) => {
+  const totalPrize = sortedData.map((event) => {
     return event.total_prize;
   });
   const series = [
