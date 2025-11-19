@@ -418,6 +418,17 @@ nav a:hover {
   font-size: 18px;
 }
 
+.divisons-section-title {
+  text-align: center;
+  color: #0066cc;
+  background-color: white;
+  margin-bottom: 30px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #0066cc;
+}
+
 .division-section {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -436,6 +447,12 @@ nav a:hover {
 .division-card h2 {
   color: #0066cc;
   font-size: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.division-card h4 {
+  color: #0066cc;
   margin-bottom: 10px;
   text-align: center;
 }

@@ -384,12 +384,13 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
       hasOneExtraCard && i === totalCards - 1 ? "extra-one" : ""
     }">
             <h2>${divisionList[i]}</h2>
+            <h4>All-Time Champions</h4>
             <table>
               <thead>
                 <tr>
                   <th>Rank</th>
-                  <th>Reigning Champions</th>
-                  <th>Win Count</th>
+                  <th>Champions</th>
+                  <th>Total Wins</th>
                 </tr>
               </thead>
               <tbody>
@@ -410,6 +411,7 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
                 </tr>
               </tbody>
             </table>
+            <h4>Recent Winners</h4>
             <table>
               <thead>
                 <tr>
