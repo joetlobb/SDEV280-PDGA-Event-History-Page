@@ -328,28 +328,32 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
       (e) => e.division === divisionList[i]
     );
 
-    const reigningWinners = [];
+    const reigningWinnersMap = new Map();
+
     divisionWinnerList.forEach((event) => {
-      const winner = event.player_name || "N/A";
-      const division = event.division;
-      if (!reigningWinners.find((dw) => dw.winner === winner)) {
-        reigningWinners.push({
-          division: division,
-          winner: winner,
-          winCount: 1,
-          pdga_number: event.pdga_number,
-        });
+      const winner = event.player_name?.trim() || "N/A";
+      const pdga = +event.pdga_number || 0;
+      const prize = +event.cash || 0;
+      const key = `${winner}___${pdga}`; // Use PDGA # as tiebreaker to avoid name collisions
+
+      if (reigningWinnersMap.has(key)) {
+        const existing = reigningWinnersMap.get(key);
+        existing.winCount += 1;
+        existing.prizeEarned += prize;
       } else {
-        reigningWinners.find((dw) => dw.winner === winner).winCount += 1;
+        reigningWinnersMap.set(key, {
+          division: event.division,
+          winner,
+          winCount: 1,
+          pdgaNumber: pdga,
+          prizeEarned: prize,
+        });
       }
     });
 
+    // Convert to array (and sort by wins)
+    const reigningWinners = Array.from(reigningWinnersMap.values());
     reigningWinners.sort((a, b) => b.winCount - a.winCount);
-
-    const updatedDivisionWinners = finalEventsResult.filter(
-      (fe) => fe.division === divisionList[i]
-    );
-    updatedDivisionWinners.sort((a, b) => b.year - a.year);
 
     // Assign ranks with handling ties
     const firstRankWinCount = reigningWinners[0]?.winCount || "N/A";
@@ -391,24 +395,10 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
                   <th>Rank</th>
                   <th>Champions</th>
                   <th>Total Wins</th>
+                  <th>Total Prize Earned</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>${reigningWinners[0]?.rank || ""}</td>
-                  <td>${reigningWinners[0]?.winner || ""}</td>
-                  <td>${reigningWinners[0]?.winCount || ""}</td>
-                </tr>
-                <tr>
-                  <td>${reigningWinners[1]?.rank || ""}</td>
-                  <td>${reigningWinners[1]?.winner || ""}</td>
-                  <td>${reigningWinners[1]?.winCount || ""}</td>
-                </tr>
-                <tr>
-                  <td>${reigningWinners[2]?.rank || ""}</td>
-                  <td>${reigningWinners[2]?.winner || ""}</td>
-                  <td>${reigningWinners[2]?.winCount || ""}</td>
-                </tr>
+              <tbody id="${divisionList[i]}-champions">
               </tbody>
             </table>
             <h4>Recent Winners</h4>
@@ -417,43 +407,11 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
                 <tr>
                   <th>Year</th>
                   <th>Winner</th>
+                  <th>Event Rating</th>
                   <th>Prize</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>${updatedDivisionWinners[0]?.year || ""}</td>
-                  <td>${updatedDivisionWinners[0]?.player_name || ""}</td>
-                  <td>${
-                    updatedDivisionWinners[0]?.cash
-                      ? `$${Number(
-                          updatedDivisionWinners[0].cash
-                        ).toLocaleString()}`
-                      : ""
-                  }</td>
-                </tr>
-                <tr>
-                  <td>${updatedDivisionWinners[1]?.year || ""}</td>
-                  <td>${updatedDivisionWinners[1]?.player_name || ""}</td>
-                  <td>${
-                    updatedDivisionWinners[1]?.cash
-                      ? `$${Number(
-                          updatedDivisionWinners[1].cash
-                        ).toLocaleString()}`
-                      : ""
-                  }</td>
-                </tr>
-                <tr>
-                  <td>${updatedDivisionWinners[2]?.year || ""}</td>
-                  <td>${updatedDivisionWinners[2]?.player_name || ""}</td>
-                  <td>${
-                    updatedDivisionWinners[2]?.cash
-                      ? `$${Number(
-                          updatedDivisionWinners[2].cash
-                        ).toLocaleString()}`
-                      : ""
-                  }</td>
-                </tr>
+              <tbody id="past-${divisionList[i]}-winners">
               </tbody>
             </table>
             <div class="division-btn-container">
@@ -463,5 +421,61 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
     `;
 
     section.innerHTML += cardContent;
+
+    // Populate all-time champions table
+    const championsTBody = document.getElementById(
+      `${divisionList[i]}-champions`
+    );
+
+    if (championsTBody && reigningWinners?.length > 0) {
+      const rows = reigningWinners
+        .map((winner) => {
+          const prizes = winner.prizeEarned ?? winner.prize ?? 0;
+          return `
+            <tr data-division="${divisionList[i]}" data-winner="${
+            winner.winner
+          }">
+              <td>${winner.rank || "-"}</td>
+              <td>${winner.winner}</td>
+              <td>${winner.winCount || 0}</td>
+              <td>$${prizes.toLocaleString()}</td>
+            </tr>
+          `.trim();
+        })
+        .join("");
+
+      championsTBody.insertAdjacentHTML("beforeend", rows);
+    }
+
+    // Get past events division winners
+    const pastDivisionWinners = finalEventsResult.filter(
+      (fe) => fe.division === divisionList[i]
+    );
+    pastDivisionWinners.sort((a, b) => b.year - a.year);
+    console.log('pastDivisionWinners', pastDivisionWinners)
+
+    // Populate recent winners table
+    const recentWinnersTBody = document.getElementById(
+      `past-${divisionList[i]}-winners`
+    );
+
+    if (recentWinnersTBody && pastDivisionWinners?.length > 0) {
+      const rows = pastDivisionWinners
+        .map((event) => {
+          return `
+            <tr data-division="${divisionList[i]}" data-past-winner="${
+            event.player_name || 'N/A'
+          }">
+              <td>${event.year || "N/A"}</td>
+              <td>${event.player_name || 'N/A'}</td>
+              <td>${event.total_score || 0}</td>
+              <td>$${(+event.cash).toLocaleString() || $0}</td>
+            </tr>
+          `.trim();
+        })
+        .join("");
+
+      recentWinnersTBody.insertAdjacentHTML("beforeend", rows);
+    }
   }
 }
