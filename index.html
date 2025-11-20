@@ -186,23 +186,59 @@
 
     <!-- Events Table -->
     <div class="events-table" id="events-table">
-      <h2>Recent Events</h2>
-      <table id="eventsTable">
+      <h2>Main Events</h2>
+      <div class="table-title">
+        <h4 id="major-table-title">PDGA Major</h4>
+      </div>
+      <table id="eventsTable-major">
         <thead id="tableHead">
           <tr>
             <th>Event Name</th>
-            <th>Date</th>
-            <th>Tier</th>
             <th>City</th>
             <th>State</th>
             <th>Country</th>
+            <th>Tournament Director</th>
           </tr>
         </thead>
         <tbody id="tableBody">
           <!-- Data will be inserted here by JavaScript -->
         </tbody>
       </table>
-      <div class="pagination-container" id="pagination-container">
+      <div class="table-title">
+        <h4 id="elite-table-title">Elite Series</h4>
+      </div>
+      <table id="eventsTable-major">
+        <thead id="tableHead">
+          <tr>
+            <th>Event Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Country</th>
+            <th>Tournament Director</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Data will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+      <div class="table-title">
+        <h4 id="others-table-title">Other Tiers</h4>
+      </div>
+      <table id="eventsTable-major">
+        <thead id="tableHead">
+          <tr>
+            <th>Event Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Country</th>
+            <th>Tournament Director</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Data will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+      <!-- <div class="pagination-container" id="pagination-container">
         <div class="pagination-info">
           Showing <span id="startEntry">1</span> to
           <span id="endEntry">10</span> of
@@ -218,7 +254,7 @@
           <button class="pagination-btn" id="nextBtn">Next</button>
           <button class="pagination-btn" id="lastBtn">Last</button>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </body>

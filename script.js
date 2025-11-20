@@ -97,7 +97,7 @@ const eventDivisionsMap = new Map();
   recentEventsList = sortedLatestEvents;
 
   // initialize pagination in recent events table
-  initPagination(recentEventsList, renderTable);
+  // initPagination(recentEventsList, renderTable);
 
   // Initialize filter functionality
   populateYearsFilter();
