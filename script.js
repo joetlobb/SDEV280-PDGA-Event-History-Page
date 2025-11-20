@@ -31,6 +31,8 @@ import {
 } from "./functions/index.js";
 
 const allEventsData = [];
+const allEventsMap = new Map();
+const mainEventsObj = {};
 let recentEventsList = [];
 let selectedEvent;
 let selectedEventsResult = [];
@@ -50,56 +52,82 @@ const eventDivisionsMap = new Map();
     getAllEventsDetails(),
   ]);
 
-  // map all events with continualId
-  allEventsDetails.forEach((event) => {
-    // continualId = newId
-    const newId =
-      allEventsId.find((e) => e.pdga_event_id === event.pdga_event_id)?.id ||
-      null;
+  const allEventsIdMap = new Map()
+  allEventsId.forEach(event => {
+    if (!allEventsIdMap.get(event.pdga_event_id)) {
+      allEventsIdMap.set(event.pdga_event_id, [])
+    }
+    allEventsIdMap.get(event.pdga_event_id).push(event)
+  })
 
-    // name = eventgeneric name
-    const newName =
-      allEventsId.find((e) => e.pdga_event_id === event.pdga_event_id)?.name ||
-      null;
+  const continualEventsListMap = new Map();
+  allEventsIdMap.forEach(pdga_event_id => {
+    if (pdga_event_id.length === 1) {
+      if (!continualEventsListMap.get(pdga_event_id[0].id)) {
+        continualEventsListMap.set(pdga_event_id[0].id, [])
+      }
+      continualEventsListMap.get(pdga_event_id[0].id).push(pdga_event_id[0])
+    } else if (pdga_event_id.length > 1) {
+      for (let i = 0; i < pdga_event_id.length; i++) {
+        if (!continualEventsListMap.get(pdga_event_id[i].id)) {
+          continualEventsListMap.set(pdga_event_id[i].id, [])
+        }
+        continualEventsListMap.get(pdga_event_id[i].id).push(pdga_event_id[i])
+      }
+    }
+  })
 
-    // process tier code
-    const { tier, tierCode } = processTierData(event);
+  const allEventsDetailsMap = new Map();
+  allEventsDetails.forEach(event => {
+    if (!allEventsDetailsMap.get(event.pdga_event_id)) {
+      allEventsDetailsMap.set(event.pdga_event_id, [])
+    }
+    allEventsDetailsMap.get(event.pdga_event_id).push(event)
+  })
 
-    // now assign to allEventsData
-    allEventsData.push({
-      ...event,
-      id: newId,
-      name: newName,
-      tier: tier,
-      tierCode: tierCode,
-    });
+  continualEventsListMap.forEach(eventsList => {
+    eventsList.forEach(event => {
+      const pdgaEventId = event.pdga_event_id;
+      const eventDetail = allEventsDetailsMap.get(pdgaEventId)
+      if (eventDetail) {
+        const continualId = event.id;
+        const mergedEventDetail = { ...event, ...eventDetail[0], id: continualId }
+        if (!allEventsMap.get(continualId)) {
+          allEventsMap.set(continualId, []);
+        }
+        allEventsMap.get(continualId).push(mergedEventDetail);
+      }
+    })
+  })
+
+  // Separate main events by tier
+  const mainEvents = [];
+  allEventsMap.forEach(events => {
+    const latestYear = Math.max(...(events.map(e => (+e.year))))
+    const lastestEventList = events.filter(event => event.year === latestYear)
+    if (lastestEventList.length === 1) {
+      mainEvents.push(lastestEventList[0]);
+    } else if (lastestEventList.length > 1) {
+      for (let i = 0; i < lastestEventList.length; i++) {
+        mainEvents.push(lastestEventList[i]);
+      }
+    }
+  })
+  mainEventsObj.major = [...mainEvents.filter(e => e.tier === 'M')];
+  mainEventsObj.elite = [...mainEvents.filter(e => e.tier === 'NT')];
+  mainEventsObj.others = [...mainEvents.filter(e => e.tier !== 'M' && e.tier !== 'NT')];
+
+  // Sort events by name separate by tier
+  Object.values(mainEventsObj).forEach(tier => {
+    tier.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
   });
 
-  // use reduce to get out only the lastest year of that continual event
-  const latestEventsMap = allEventsData.reduce((accumulator, currentEvent) => {
-    const currentId = currentEvent.id;
-    if (
-      !accumulator[currentId] ||
-      currentEvent.year > accumulator[currentId].year
-    ) {
-      accumulator[currentId] = currentEvent;
-    }
-    return accumulator;
-  }, {});
+  console.log(mainEventsObj)
 
-  // convert obj to array
-  const latestEventsArray = Object.values(latestEventsMap);
+  // Render all events table
+  renderTable();
 
-  // sort by date
-  const sortedLatestEvents = sortingEventsByDate(latestEventsArray);
-
-  // assign to recentEventsList
-  recentEventsList = sortedLatestEvents;
-
-  // initialize pagination in recent events table
-  // initPagination(recentEventsList, renderTable);
-
-  // Initialize filter functionality
+  // // Initialize filter functionality
   populateYearsFilter();
   populateDivisionsFilter();
   populateTiersFilter();
