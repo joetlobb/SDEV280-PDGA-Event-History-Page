@@ -320,7 +320,7 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
 
   // Loop through divisions and create cards
   const totalCards = divisionList.length;
-  const hasOneExtraCard = totalCards % 3 === 1;
+  let tableHeight = 0;
 
   for (let i = 0; i < totalCards; i++) {
     // Get reigning winners
@@ -355,6 +355,15 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
     const reigningWinners = Array.from(reigningWinnersMap.values());
     reigningWinners.sort((a, b) => b.winCount - a.winCount);
 
+    // Set table height for champions table
+    if (i === 0 && tableHeight === 0) {
+      tableHeight = (reigningWinners.length * 33) + 48;
+    } else if (i === 1) {
+      const newHeight = (reigningWinners.length * 33) + 48;
+      tableHeight = tableHeight > newHeight ?
+        newHeight : tableHeight;
+    }
+
     // Assign ranks with handling ties
     const firstRankWinCount = reigningWinners[0]?.winCount || "N/A";
     let currentWinCount = firstRankWinCount;
@@ -384,39 +393,38 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
 
     // Create card content
     const cardContent = `
-    <div class="division-card ${
-      hasOneExtraCard && i === totalCards - 1 ? "extra-one" : ""
-    }">
+    <div class="division-card">
             <h2>${divisionList[i]}</h2>
             <h4>All-Time Champions</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Champions</th>
-                  <th>Total Wins</th>
-                  <th>Total Prize Earned</th>
-                </tr>
-              </thead>
-              <tbody id="${divisionList[i]}-champions">
-              </tbody>
-            </table>
-            <h4>Recent Winners</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th>Year</th>
-                  <th>Winner</th>
-                  <th>Event Rating</th>
-                  <th>Prize</th>
-                </tr>
-              </thead>
-              <tbody id="past-${divisionList[i]}-winners">
-              </tbody>
-            </table>
-            <div class="division-btn-container">
-              <button>View More</button>
+            <div class='divisions-table-wrapper'>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Champions</th>
+                    <th>Total Wins</th>
+                    <th>Total Prize Earned</th>
+                  </tr>
+                </thead>
+                <tbody id="${divisionList[i]}-champions">
+                </tbody>
+              </table>
             </div>
+            <h4>Recent Winners</h4>
+            <div class='divisions-table-wrapper'>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Winner</th>
+                    <th>Total Score</th>
+                    <th>Prize</th>
+                  </tr>
+                </thead>
+                <tbody id="past-${divisionList[i]}-winners">
+                </tbody>
+              </table>
+            </div>  
           </div>
     `;
 
@@ -432,9 +440,8 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
         .map((winner) => {
           const prizes = winner.prizeEarned ?? winner.prize ?? 0;
           return `
-            <tr data-division="${divisionList[i]}" data-winner="${
-            winner.winner
-          }">
+            <tr data-division="${divisionList[i]}" data-winner="${winner.winner
+            }">
               <td>${winner.rank || "-"}</td>
               <td>${winner.winner}</td>
               <td>${winner.winCount || 0}</td>
@@ -452,7 +459,6 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
       (fe) => fe.division === divisionList[i]
     );
     pastDivisionWinners.sort((a, b) => b.year - a.year);
-    console.log('pastDivisionWinners', pastDivisionWinners)
 
     // Populate recent winners table
     const recentWinnersTBody = document.getElementById(
@@ -463,9 +469,8 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
       const rows = pastDivisionWinners
         .map((event) => {
           return `
-            <tr data-division="${divisionList[i]}" data-past-winner="${
-            event.player_name || 'N/A'
-          }">
+            <tr data-division="${divisionList[i]}" data-past-winner="${event.player_name || 'N/A'
+            }">
               <td>${event.year || "N/A"}</td>
               <td>${event.player_name || 'N/A'}</td>
               <td>${event.total_score || 0}</td>
@@ -478,4 +483,9 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
       recentWinnersTBody.insertAdjacentHTML("beforeend", rows);
     }
   }
+
+  const allTables = document.querySelectorAll('.divisions-table-wrapper');
+  allTables.forEach(wrapper => {
+    wrapper.style.height = `${tableHeight}px`;
+  });
 }
