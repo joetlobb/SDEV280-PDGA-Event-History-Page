@@ -488,4 +488,10 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   allTables.forEach(wrapper => {
     wrapper.style.height = `${tableHeight}px`;
   });
+
+  const allDivisionsCard = document.querySelectorAll('.division-card');
+  if (allDivisionsCard.length === 1) {
+    document.getElementById('division-section').style.gridTemplateColumns = 'repeat(4, 1fr)';
+    allDivisionsCard[0].style.gridColumn = '2/4';
+  }
 }
