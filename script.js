@@ -338,7 +338,7 @@ function clearFilters() {
   if (countrySelect) countrySelect.value = "";
 
   // Reset to show all events
-  initPagination(recentEventsList, renderTable);
+  renderTable(mainEventsObj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
