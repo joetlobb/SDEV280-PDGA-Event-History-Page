@@ -143,3 +143,21 @@ export function sortTiers(tiers) {
     return indexA - indexB;
   });
 }
+
+export function deepCopyMapOfObjects(originalMap) {
+    // 1. Convert the Map entries into an array of [key, value] pairs.
+    // 2. Map over this array.
+    // 3. For each pair [key, value], create a new pair:
+    //    - The key remains the same (assuming keys are primitives or safe to copy by reference).
+    //    - The value (the object) is deep-copied using JSON methods (or structuredClone for modern environments).
+
+    return new Map(
+      Array.from(originalMap, ([key, value]) => {
+        // Create a new, independent copy of the object
+        const clonedValue = JSON.parse(JSON.stringify(value));
+
+        // Return the new [key, clonedValue] pair
+        return [key, clonedValue];
+      })
+    );
+  };

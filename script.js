@@ -22,6 +22,7 @@ import {
   sortTiers,
   getUniqueEventDivisions,
   customTierOrder,
+  deepCopyMapOfObjects,
 } from "./functions/index.js";
 
 const allEventsData = [];
@@ -96,8 +97,8 @@ const eventDivisionsMap = new Map();
 
   // Separate main events by tier
   const mainEvents = [];
-  allEventsMap.forEach(events => {
-
+  const copyAllEventsMap = deepCopyMapOfObjects(allEventsMap);
+  copyAllEventsMap.forEach(events => {
     const latestYear = Math.max(...(events.map(e => (+e.year))))
     const isMultipleCity = Array.from(new Set(events.map(e => (e.city)))).length > 1 ? true : false;
     const isMultipleState = Array.from(new Set(events.map(e => (e.state)))).length > 1 ? true : false;
@@ -430,6 +431,8 @@ function renderTable() {
           });
         });
         pastEventsList = sortingEventsByDate(newUnsortedSelectedEvents);
+        console.log(pastEventsList)
+        console.log(allEventsMap)
 
         const pdgaNumbers = Array.from(
           new Set(eventsResult.map((e) => +e.pdga_number))
