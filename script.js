@@ -33,6 +33,7 @@ let selectedEvent;
 let selectedEventsResult = [];
 let pastEventsList = [];
 let continualId;
+const eventIdsContinualIdsMap = new Map();
 const eventDivisionsMap = new Map();
 
 // --------------------------------------------------------------------------------------------------------------------------
@@ -183,12 +184,14 @@ function populateOptions(selectElement, optionsArray, defaultOptionText) {
 // Populate year dropdown with unique years from allEventsData
 function populateYearsFilter() {
   const yearSelect = document.getElementById("year");
-  const uniqueYears = [
-    ...new Set(allEventsData.map((event) => event.year)),
-  ].sort((a, b) => b - a); // Sort descending
+  let uniqueYears = [];
+  allEventsMap.forEach(events => {
+    uniqueYears = [...uniqueYears, ...events.map(e => e.year)];
+  });
+  const sortedUniqueYears = [...new Set(uniqueYears)].sort((a, b) => b - a);
 
   // Add unique years to dropdown
-  populateOptions(yearSelect, uniqueYears, "All Years");
+  populateOptions(yearSelect, sortedUniqueYears, "All Years");
 }
 
 // Populate tier dropdown with unique tier from allEventsData
@@ -217,7 +220,6 @@ function populateCountriesFilter() {
 async function populateDivisionsFilter() {
   const divisionsByPdgaEventIdList = await getUniqueEventDivisions();
 
-  const eventIdsContinualIdsMap = new Map();
   allEventsMap.forEach((id) => {
     id.forEach(event => {
       if (!eventIdsContinualIdsMap.get(event.pdga_event_id)) {
@@ -269,11 +271,16 @@ function filterEvents() {
 
   // Filter by year - check if the event was played in the selected year
   if (selectedYear && selectedYear !== "All Years") {
-    filteredEvents = filteredEvents.filter((event) => {
-      // For year filtering, we need to check if any event in the continual series was played in that year
-      const continualEvents = allEventsData.filter((e) => e.id === event.id);
-      return continualEvents.some((e) => e.year.toString() === selectedYear);
+    let eventsList = [];
+    allEventsMap.forEach(id => {
+      eventsList = [...eventsList, ...id.filter(e => e.year.toString() === selectedYear.toString())];
+    }); 
+    const continualIds = eventsList.map(e => e.id)
+    let updatedFilteredEvents = []
+    continualIds.forEach(id => {
+      updatedFilteredEvents = [...updatedFilteredEvents, ...filteredEvents.filter(e => e.id === id)]
     });
+    filteredEvents = [...new Set(updatedFilteredEvents)];
   }
 
   // Filter by tier
@@ -303,8 +310,6 @@ function filterEvents() {
   filteredEventsObj.major = [...filteredEvents.filter(e => e.tier === 'Major')];
   filteredEventsObj.elite = [...filteredEvents.filter(e => e.tier === 'Elite')];
   filteredEventsObj.others = [...filteredEvents.filter(e => e.tier !== 'Major' && e.tier !== 'Elite')];
-
-  console.log(filteredEventsObj)
 
   // Update pagination with filtered data
   renderTable(filteredEventsObj);
