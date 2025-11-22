@@ -97,8 +97,20 @@ const eventDivisionsMap = new Map();
   // Separate main events by tier
   const mainEvents = [];
   allEventsMap.forEach(events => {
+
     const latestYear = Math.max(...(events.map(e => (+e.year))))
+    const isMultipleCity = Array.from(new Set(events.map(e => (e.city)))).length > 1 ? true : false;
+    const isMultipleState = Array.from(new Set(events.map(e => (e.state)))).length > 1 ? true : false;
+    const isMultipleCountry = Array.from(new Set(events.map(e => (e.country)))).length > 1 ? true : false;
+    const isMultipleDirector = Array.from(new Set(events.map(e => (e.tournament_director)))).length > 1 ? true : false;
+
     const lastestEventList = events.filter(event => event.year === latestYear)
+    lastestEventList.forEach(event => {
+      if (isMultipleCity) event.city = 'Multiple Cities';
+      if (isMultipleState) event.state = 'Multiple States';
+      if (isMultipleCountry) event.country = 'Multiple Countries';
+      if (isMultipleDirector) event.tournament_director = 'Multiple Directors';
+    })
     if (lastestEventList.length === 1) {
       mainEvents.push(lastestEventList[0]);
     } else if (lastestEventList.length > 1) {
