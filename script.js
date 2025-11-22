@@ -153,7 +153,6 @@ const eventDivisionsMap = new Map();
   // // Initialize filter functionality
   populateYearsFilter();
   populateDivisionsFilter();
-  populateTiersFilter();
   populateCountriesFilter();
   initializeFilters();
 
@@ -194,26 +193,18 @@ function populateYearsFilter() {
   populateOptions(yearSelect, sortedUniqueYears, "All Years");
 }
 
-// Populate tier dropdown with unique tier from allEventsData
-function populateTiersFilter() {
-  const tierSelect = document.getElementById("tier");
-  const uniqueTiers = [
-    ...new Set(sortTiers(allEventsData.map((event) => event.tier))),
-  ];
-
-  // Add unique years to dropdown
-  populateOptions(tierSelect, uniqueTiers, "All Tiers");
-}
-
 // Populate country dropdown with unique countries from allEventsData
 function populateCountriesFilter() {
   const countrySelect = document.getElementById("country");
-  const uniqueCountries = [
-    ...new Set(allEventsData.map((event) => event.country)),
-  ].sort();
+
+  let uniqueCountries = [];
+  allEventsMap.forEach(events => {
+    uniqueCountries = [...uniqueCountries, ...events.map(e => e.country)];
+  });
+  const sortedCountries = [...new Set(uniqueCountries)].sort();
 
   // Add unique countries to dropdown
-  populateOptions(countrySelect, uniqueCountries, "All Countries");
+  populateOptions(countrySelect, sortedCountries, "All Countries");
 }
 
 // Populate division dropdown with unique divisions from all events
@@ -256,12 +247,10 @@ async function populateDivisionsFilter() {
 function filterEvents() {
   const yearSelect = document.getElementById("year");
   const divisionSelect = document.getElementById("division");
-  const tierSelect = document.getElementById("tier");
   const countrySelect = document.getElementById("country");
 
   const selectedYear = yearSelect.value;
   const selectedDivision = divisionSelect.value;
-  const selectedTier = tierSelect.value;
   const selectedCountry = countrySelect.value;
 
   let filteredEvents = [];
@@ -274,7 +263,7 @@ function filterEvents() {
     let eventsList = [];
     allEventsMap.forEach(id => {
       eventsList = [...eventsList, ...id.filter(e => e.year.toString() === selectedYear.toString())];
-    }); 
+    });
     const continualIds = eventsList.map(e => e.id)
     let updatedFilteredEvents = []
     continualIds.forEach(id => {
@@ -283,19 +272,18 @@ function filterEvents() {
     filteredEvents = [...new Set(updatedFilteredEvents)];
   }
 
-  // Filter by tier
-  if (selectedTier && selectedTier !== "All Tiers") {
-    filteredEvents = filteredEvents.filter((event) => {
-      const processedEvent = processTierData({ ...event });
-      return processedEvent.tier === selectedTier;
-    });
-  }
-
   // Filter by country
   if (selectedCountry && selectedCountry !== "All Countries") {
-    filteredEvents = filteredEvents.filter(
-      (event) => event.country === selectedCountry
-    );
+    let eventsList = [];
+    allEventsMap.forEach(id => {
+      eventsList = [...eventsList, ...id.filter(e => e.country === selectedCountry)];
+    });
+    const continualIds = eventsList.map(e => e.id)
+    let updatedFilteredEvents = []
+    continualIds.forEach(id => {
+      updatedFilteredEvents = [...updatedFilteredEvents, ...filteredEvents.filter(e => e.id === id)]
+    });
+    filteredEvents = [...new Set(updatedFilteredEvents)];
   }
 
   // Filter by division - check if any event in the continual series had that division
@@ -319,7 +307,6 @@ function filterEvents() {
 function initializeFilters() {
   const yearSelect = document.getElementById("year");
   const divisionSelect = document.getElementById("division");
-  const tierSelect = document.getElementById("tier");
   const countrySelect = document.getElementById("country");
   const clearFiltersBtn = document.getElementById("clearFilters");
 
@@ -329,10 +316,6 @@ function initializeFilters() {
 
   if (divisionSelect) {
     divisionSelect.addEventListener("change", filterEvents);
-  }
-
-  if (tierSelect) {
-    tierSelect.addEventListener("change", filterEvents);
   }
 
   if (countrySelect) {
@@ -348,12 +331,10 @@ function initializeFilters() {
 function clearFilters() {
   const yearSelect = document.getElementById("year");
   const divisionSelect = document.getElementById("division");
-  const tierSelect = document.getElementById("tier");
   const countrySelect = document.getElementById("country");
 
   if (yearSelect) yearSelect.value = "";
   if (divisionSelect) divisionSelect.value = "";
-  if (tierSelect) tierSelect.value = "";
   if (countrySelect) countrySelect.value = "";
 
   // Reset to show all events
