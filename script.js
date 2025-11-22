@@ -147,7 +147,7 @@ const eventDivisionsMap = new Map();
   };
 
   // Render all events table
-  renderTable();
+  renderTable(mainEventsObj);
 
   // // Initialize filter functionality
   populateYearsFilter();
@@ -222,7 +222,7 @@ async function populateDivisionsFilter() {
     id.forEach(event => {
       if (!eventIdsContinualIdsMap.get(event.pdga_event_id)) {
         eventIdsContinualIdsMap.set(event.pdga_event_id, []);
-      } 
+      }
       eventIdsContinualIdsMap.get(event.pdga_event_id).push(event.id);
     });
   });
@@ -262,7 +262,10 @@ function filterEvents() {
   const selectedTier = tierSelect.value;
   const selectedCountry = countrySelect.value;
 
-  let filteredEvents = [...recentEventsList];
+  let filteredEvents = [];
+  for (const [tier, mainEvents] of Object.entries(mainEventsObj)) {
+    filteredEvents = [...filteredEvents, ...mainEvents]
+  };
 
   // Filter by year - check if the event was played in the selected year
   if (selectedYear && selectedYear !== "All Years") {
@@ -296,8 +299,15 @@ function filterEvents() {
     });
   }
 
+  const filteredEventsObj = {};
+  filteredEventsObj.major = [...filteredEvents.filter(e => e.tier === 'Major')];
+  filteredEventsObj.elite = [...filteredEvents.filter(e => e.tier === 'Elite')];
+  filteredEventsObj.others = [...filteredEvents.filter(e => e.tier !== 'Major' && e.tier !== 'Elite')];
+
+  console.log(filteredEventsObj)
+
   // Update pagination with filtered data
-  initPagination(filteredEvents, renderTable);
+  renderTable(filteredEventsObj);
 }
 
 // Add event listeners for filter changes
@@ -384,12 +394,12 @@ function renderEvent() {
 //
 // --------------------------------------------------------------------------------------------------------------------------
 
-function renderTable() {
-  for (const [tier, mainEvents] of Object.entries(mainEventsObj)) {
+function renderTable(eventsObject) {
+  for (const [tier, mainEvents] of Object.entries(eventsObject)) {
     const tableBody = document.getElementById(`${tier}-tableBody`);
 
     // Clear table
-    clearTable("tableBody");
+    clearTable(`${tier}-tableBody`);
 
     mainEvents.forEach(event => {
       // Add data rows
@@ -436,8 +446,6 @@ function renderTable() {
           });
         });
         pastEventsList = sortingEventsByDate(newUnsortedSelectedEvents);
-        console.log(pastEventsList)
-        console.log(allEventsMap)
 
         const pdgaNumbers = Array.from(
           new Set(eventsResult.map((e) => +e.pdga_number))
