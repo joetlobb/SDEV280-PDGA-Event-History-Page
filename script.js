@@ -4,17 +4,10 @@ import {
   getParticipantsAndPrizesPerYearByPdgaEventIds,
   clearTable,
   createClickableRow,
-  fillEmptyRows,
-  relocatePaginationControls,
   activateBackToAllEventsBtn,
   initPagination,
-  getPaginationInfo,
-  getCurrentPageData,
-  updatePaginationInfo,
-  updatePaginationControls,
   processTierData,
   sortingEventsByDate,
-  renderPastEventsTable,
   renderEventDetails,
   renderParticipantsTrend,
   renderPrizeMoneyAnalysis,
@@ -26,8 +19,9 @@ import {
   getPlayersByPdgaNumbers,
   renderDivisionsWinner,
   sortDivisions,
-  getUniqueEventDivisions,
   sortTiers,
+  getUniqueEventDivisions,
+  customTierOrder,
 } from "./functions/index.js";
 
 const allEventsData = [];
@@ -118,11 +112,26 @@ const eventDivisionsMap = new Map();
   mainEventsObj.others = [...mainEvents.filter(e => e.tier !== 'M' && e.tier !== 'NT')];
 
   // Sort events by name separate by tier
-  Object.values(mainEventsObj).forEach(tier => {
-    tier.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
-  });
-
-  console.log(mainEventsObj)
+  for (const [tier, mainEvents] of Object.entries(mainEventsObj)) {
+    mainEvents.forEach(event => { processTierData(event) });
+    if (tier === 'others') {
+      mainEvents.sort((a, b) => {
+        const indexA = customTierOrder.indexOf(a.tier);
+        const indexB = customTierOrder.indexOf(b.tier);
+        const effectiveIndexA = indexA === -1 ? Infinity : indexA;
+        const effectiveIndexB = indexB === -1 ? Infinity : indexB;
+        const tierDifference = effectiveIndexA - effectiveIndexB;
+        if (tierDifference !== 0) {
+          return tierDifference;
+        }
+        const nameA = a.name;
+        const nameB = b.name;
+        return nameA.localeCompare(nameB, 'en', { sensitivity: 'base' });
+      })
+    } else {
+      mainEvents.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+    }
+  };
 
   // Render all events table
   renderTable();
@@ -346,10 +355,9 @@ if (searchForm && searchInput) {
 // --------------------------------------------------------------------------------------------------------------------------
 
 function renderEvent() {
-  // processFilterEvent();
   renderEventDetails(selectedEvent, pastEventsList);
-  renderDivisionsWinner(selectedEventsResult, pastEventsList);
   renderSelectedVizButton();
+  renderDivisionsWinner(selectedEventsResult, pastEventsList);
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
@@ -359,108 +367,86 @@ function renderEvent() {
 // --------------------------------------------------------------------------------------------------------------------------
 
 function renderTable() {
-  const tableBody = document.getElementById("tableBody");
-  const { data: pageData } = getCurrentPageData();
-  const { pageSize } = getPaginationInfo();
+  for (const [tier, mainEvents] of Object.entries(mainEventsObj)) {
+    const tableBody = document.getElementById(`${tier}-tableBody`);
 
-  // Clear table
-  clearTable("tableBody");
+    // Clear table
+    clearTable("tableBody");
 
-  // Add data rows
-  pageData.forEach((item) => {
-    const rowContent = `
-      <td>${item.name}</td>
-      <td>${item.start_date}</td>
-      <td><span class="tier-badge ${item.tierCode}">${item.tier}</span></td>
-      <td>${item.city}</td>
-      <td>${item.state}</td>
-      <td>${item.country}</td>
-    `;
+    mainEvents.forEach(event => {
+      // Add data rows
+      const rowContent = `
+        <td>${event.name}</td>
+        <td><span class="tier-badge ${event.tierCode}">${event.tier}</span></td>
+        <td>${event.city}</td>
+        <td>${event.state}</td>
+        <td>${event.country}</td>
+      `;
 
-    // Add event listener to the row
-    const row = createClickableRow(rowContent, async () => {
-      // Assign selectedEvent
-      selectedEvent = item;
+      // Add event listener to the row
+      const row = createClickableRow(rowContent, async () => {
+        // Assign selectedEvent continualId
+        continualId = event.id;
 
-      // Assign selectedEvent continualId
-      continualId = item.id;
+        // Assign selectedEvent
+        selectedEvent = event;
 
-      // Get selectedEvent data from allEventsData
-      const unsortedSelectedEvent = allEventsData.filter(
-        (event) => event.id === continualId
-      );
+        // Get selectedEvents 
+        const unsortedSelectedEvents = allEventsMap.get(continualId);
 
-      // Gather all pdga_event_id for query additional data (players count and total prize)
-      const pdgaEventIds = [];
-      unsortedSelectedEvent.forEach((event) => {
-        pdgaEventIds.push(event.pdga_event_id);
-      });
+        // Gather all pdga_event_id for query additional data (players count and total prize)
+        const pdgaEventIds = unsortedSelectedEvents.map(e => e.pdga_event_id);
 
-      const [additionalData, eventsResult] = await Promise.all([
-        getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds),
-        getEventsResultByPdgaEventIds(pdgaEventIds),
-      ]);
+        const [additionalData, eventsResult] = await Promise.all([
+          getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds),
+          getEventsResultByPdgaEventIds(pdgaEventIds),
+        ]);
 
-      // Map to new array
-      const newUnsortedSelectedEvent = [];
-      unsortedSelectedEvent.forEach((event) => {
-        const playersCount =
-          additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
-            ?.players_count || "N/A";
-        const totalPrize =
-          additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
-            ?.total_prize || "N/A";
-        newUnsortedSelectedEvent.push({
-          ...event,
-          players_count: playersCount,
-          total_prize: totalPrize,
+        // Map to new array
+        const newUnsortedSelectedEvents = [];
+        unsortedSelectedEvents.forEach((event) => {
+          const playersCount =
+            additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
+              ?.players_count || "N/A";
+          const totalPrize =
+            additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
+              ?.total_prize || "N/A";
+          newUnsortedSelectedEvents.push({
+            ...event,
+            players_count: playersCount,
+            total_prize: totalPrize,
+          });
         });
-      });
-      pastEventsList = sortingEventsByDate(newUnsortedSelectedEvent);
+        pastEventsList = sortingEventsByDate(newUnsortedSelectedEvents);
 
-      const pdgaNumbers = Array.from(
-        new Set(eventsResult.map((e) => +e.pdga_number))
-      );
-
-      const winnersData = await getPlayersByPdgaNumbers(pdgaNumbers);
-
-      eventsResult.forEach((event) => {
-        const player = winnersData.find(
-          (p) => String(p.pdga_number) === String(event.pdga_number)
+        const pdgaNumbers = Array.from(
+          new Set(eventsResult.map((e) => +e.pdga_number))
         );
-        event.player_name = player
-          ? `${player.first_name} ${player.last_name}`
-          : "N/A";
+
+        const winnersData = await getPlayersByPdgaNumbers(pdgaNumbers);
+
+        eventsResult.forEach((event) => {
+          const player = winnersData.find(
+            (p) => String(p.pdga_number) === String(event.pdga_number)
+          );
+          event.player_name = player
+            ? `${player.first_name} ${player.last_name}`
+            : "N/A";
+        });
+
+        selectedEventsResult = eventsResult;
+
+        renderEvent();
+
+        // Adjust CSS accordingly
+        document.getElementById("past-events-table").style.display = "block";
+        document.getElementById("btn-container").style.display = "flex";
+        document.getElementById("events-table").style.display = "none";
       });
 
-      selectedEventsResult = eventsResult;
-
-      renderEvent();
-
-      // move pagination button to the past events table
-      const paginationContainer = document.getElementById(
-        "pagination-container"
-      );
-      const newParent = document.getElementById("past-events-table");
-      relocatePaginationControls(paginationContainer, newParent);
-
-      // Adjust CSS accordingly
-      document.getElementById("past-events-table").style.display = "block";
-      document.getElementById("btn-container").style.display = "flex";
-      document.getElementById("events-table").style.display = "none";
-
-      initPagination(pastEventsList, renderPastEventsTable);
+      tableBody.appendChild(row);
     });
-
-    tableBody.appendChild(row);
-  });
-
-  // Fill empty rows
-  fillEmptyRows(tableBody, pageData.length, pageSize, 6);
-
-  // Update pagination UI
-  updatePaginationInfo();
-  updatePaginationControls();
+  }
 }
 
 // --------------------------------------------------------------------------------------------------------------------------

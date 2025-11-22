@@ -3,6 +3,7 @@ import { sortDivisions } from "./functions.js";
 import {
   getCurrentPageData,
   getPaginationInfo,
+  initPagination,
   updatePaginationControls,
   updatePaginationInfo,
 } from "./pagination.js";
@@ -201,7 +202,7 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
   const eventSection = document.getElementById("event-section");
   const eventName = document.getElementById("event-name");
   const eventTier = document.getElementById("event-tier");
-  const eventDates = document.getElementById("event-dates");
+  const eventRunning = document.getElementById("event-running");
   const eventCity = document.getElementById("event-city");
   const eventState = document.getElementById("event-state");
   const eventCountry = document.getElementById("event-country");
@@ -212,7 +213,7 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
     !eventSection ||
     !eventName ||
     !eventTier ||
-    !eventDates ||
+    !eventRunning ||
     !eventCity ||
     !eventState ||
     !eventCountry ||
@@ -239,21 +240,24 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
   if (pastEventsList && pastEventsList.length > 0) {
     const start_year = pastEventsList[pastEventsList.length - 1].year;
     const end_year = pastEventsList[0].year;
-    eventDates.textContent = `${start_year} - ${end_year}`;
+    eventRunning.textContent = `${start_year} - ${end_year}`;
   } else {
-    eventDates.textContent = "N/A";
+    eventRunning.textContent = "N/A";
   }
 
   updateStatCards(pastEventsList);
 
+  // TODO : check city
   eventCity.textContent = selectedEvent.city + ",\u00A0" || "N/A,\u00A0";
+  // TODO : check state
   eventState.textContent = selectedEvent.state
     ? selectedEvent.state + ",\u00A0"
     : "";
   eventCountry.textContent = selectedEvent.country || "N/A";
+  // TODO : check countries
   eventDirector.textContent = selectedEvent.tournament_director || "N/A";
 
-  renderPastEventsTable();
+  initPagination(pastEventsList, renderPastEventsTable); 
 
   // Smooth scroll to the event section
   eventSection.scrollIntoView({

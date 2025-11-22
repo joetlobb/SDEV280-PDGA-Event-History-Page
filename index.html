@@ -88,7 +88,7 @@
             <span class="event-tier-badge" id="event-tier">
               <span class="tier-badge tier-a">A-Tier</span>
             </span>
-            <span class="event-dates" id="event-dates"> Date </span>
+            <span class="event-dates" id="event-running"> Date </span>
           </div>
         </div>
       </div>
@@ -177,6 +177,23 @@
             <!-- Data will be inserted here -->
           </tbody>
         </table>
+        <div class="pagination-container" id="pagination-container">
+          <div class="pagination-info">
+            Showing <span id="startEntry">1</span> to
+            <span id="endEntry">10</span> of
+            <span id="totalEntries">0</span> entries
+          </div>
+
+          <div class="pagination-controls">
+            <button class="pagination-btn" id="firstBtn">First</button>
+            <button class="pagination-btn" id="prevBtn">Previous</button>
+
+            <div id="pageNumbers"></div>
+
+            <button class="pagination-btn" id="nextBtn">Next</button>
+            <button class="pagination-btn" id="lastBtn">Last</button>
+          </div>
+        </div>
       </div>
 
       <div class="btn-container" id="btn-container">
@@ -200,7 +217,7 @@
             <th>Country</th>
           </tr>
         </thead>
-        <tbody id="tableBody">
+        <tbody id="major-tableBody">
           <!-- Data will be inserted here by JavaScript -->
         </tbody>
       </table>
@@ -217,7 +234,7 @@
             <th>Country</th>
           </tr>
         </thead>
-        <tbody id="tableBody">
+        <tbody id="elite-tableBody">
           <!-- Data will be inserted here by JavaScript -->
         </tbody>
       </table>
@@ -234,27 +251,10 @@
             <th>Country</th>
           </tr>
         </thead>
-        <tbody id="tableBody">
+        <tbody id="others-tableBody">
           <!-- Data will be inserted here by JavaScript -->
         </tbody>
       </table>
-      <!-- <div class="pagination-container" id="pagination-container">
-        <div class="pagination-info">
-          Showing <span id="startEntry">1</span> to
-          <span id="endEntry">10</span> of
-          <span id="totalEntries">0</span> entries
-        </div>
-
-        <div class="pagination-controls">
-          <button class="pagination-btn" id="firstBtn">First</button>
-          <button class="pagination-btn" id="prevBtn">Previous</button>
-
-          <div id="pageNumbers"></div>
-
-          <button class="pagination-btn" id="nextBtn">Next</button>
-          <button class="pagination-btn" id="lastBtn">Last</button>
-        </div>
-      </div> -->
     </div>
   </div>
 </body>
