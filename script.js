@@ -215,29 +215,34 @@ function populateCountriesFilter() {
 
 // Populate division dropdown with unique divisions from all events
 async function populateDivisionsFilter() {
-  const data = await getUniqueEventDivisions();
+  const divisionsByPdgaEventIdList = await getUniqueEventDivisions();
 
   const eventIdsContinualIdsMap = new Map();
-  allEventsData.forEach((event) => {
-    if (!eventIdsContinualIdsMap.get(event.pdga_event_id)) {
-      eventIdsContinualIdsMap.set(event.pdga_event_id, event.id);
-    }
+  allEventsMap.forEach((id) => {
+    id.forEach(event => {
+      if (!eventIdsContinualIdsMap.get(event.pdga_event_id)) {
+        eventIdsContinualIdsMap.set(event.pdga_event_id, []);
+      } 
+      eventIdsContinualIdsMap.get(event.pdga_event_id).push(event.id);
+    });
   });
 
-  data.forEach((item) => {
-    const continualId = eventIdsContinualIdsMap.get(item.pdga_event_id);
-    const divisionsArray = eventDivisionsMap.get(continualId);
-    if (!divisionsArray) {
-      eventDivisionsMap.set(continualId, []);
-    }
-    if (divisionsArray && !divisionsArray.includes(item.division)) {
-      eventDivisionsMap.get(continualId).push(item.division);
-    }
+  divisionsByPdgaEventIdList.forEach((eventId) => {
+    const continualIdList = eventIdsContinualIdsMap.get(eventId.pdga_event_id);
+    continualIdList?.forEach(continualId => {
+      const divisionsArray = eventDivisionsMap.get(continualId);
+      if (!divisionsArray) {
+        eventDivisionsMap.set(continualId, []);
+      }
+      if (divisionsArray && !divisionsArray.includes(eventId.division)) {
+        eventDivisionsMap.get(continualId).push(eventId.division);
+      }
+    });
   });
 
   // Get unique and sorted divisions
   const sortedDivisions = sortDivisions([
-    ...new Set(data.map((item) => item.division)),
+    ...new Set(divisionsByPdgaEventIdList.map((item) => item.division)),
   ]);
 
   const divisionSelect = document.getElementById("division");
