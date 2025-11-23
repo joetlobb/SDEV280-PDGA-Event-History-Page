@@ -134,11 +134,18 @@ nav a:hover {
   margin-bottom: 20px;
 }
 
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.filter-container {
+  display: flex;
+  justify-content: stretch;
   gap: 20px;
 }
+
+.filter-item:first-of-type,
+.filter-item:nth-of-type(2),
+.filter-item:nth-of-type(3) {
+  flex: 1;
+}
+
 
 .filter-item label {
   display: block;
@@ -147,6 +154,8 @@ nav a:hover {
   color: #333;
   font-size: 14px;
 }
+
+
 
 .filter-item select {
   width: 100%;
