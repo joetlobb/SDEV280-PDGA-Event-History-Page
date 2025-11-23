@@ -87,10 +87,18 @@ export function relocatePaginationControls(
 
 export function activateBackToAllEventsBtn() {
   const btn = document.getElementById("all-events-btn");
-  btn.addEventListener("click", () => {
+  const headerBtn = document.getElementById("header-back-btn");
+  
+  const backToAllEvents = () => {
     document.getElementById("btn-container").style.display = "none";
     window.location.reload();
-  });
+  };
+  
+  btn.addEventListener("click", backToAllEvents);
+  
+  if (headerBtn) {
+    headerBtn.addEventListener("click", backToAllEvents);
+  }
 }
 
 export function getTierBadge(tier) {
@@ -258,13 +266,16 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
   } else {
     eventCity.textContent = selectedEvent.city + ",\u00A0" || "N/A,\u00A0";
     eventState.textContent = selectedEvent.state
-    ? selectedEvent.state + ",\u00A0"
-    : "";
+      ? selectedEvent.state + ",\u00A0"
+      : "";
     eventCountry.textContent = selectedEvent.country || "N/A";
   }
-    eventDirector.textContent = selectedEvent.tournament_director || "N/A";
+  eventDirector.textContent = selectedEvent.tournament_director || "N/A";
 
-  initPagination(pastEventsList, renderPastEventsTable); 
+  initPagination(pastEventsList, renderPastEventsTable);
+
+  // Show the header back button when viewing an event
+  showHeaderBackButton();
 
   // Smooth scroll to the event section
   eventSection.scrollIntoView({
@@ -504,5 +515,19 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   if (allDivisionsCard.length === 1) {
     document.getElementById('division-section').style.gridTemplateColumns = 'repeat(4, 1fr)';
     allDivisionsCard[0].style.gridColumn = '2/4';
+  }
+}
+
+export function showHeaderBackButton() {
+  const headerBtn = document.getElementById("header-back-btn");
+  if (headerBtn) {
+    headerBtn.classList.remove("hidden");
+  }
+}
+
+export function hideHeaderBackButton() {
+  const headerBtn = document.getElementById("header-back-btn");
+  if (headerBtn) {
+    headerBtn.classList.add("hidden");
   }
 }
