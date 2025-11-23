@@ -3,7 +3,6 @@ import {
   getAllEventsDetails,
   getParticipantsAndPrizesPerYearByPdgaEventIds,
   clearTable,
-  createClickableRow,
   activateBackToAllEventsBtn,
   processTierData,
   sortingEventsByDate,
