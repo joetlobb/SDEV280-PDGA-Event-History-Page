@@ -148,6 +148,20 @@ const eventDivisionsMap = new Map();
   // Render all events table
   renderTable(mainEventsObj);
 
+  // Check if coming from search page with selected event
+  const selectedId = sessionStorage.getItem('selectedId');
+  if (selectedId) {
+    console.log(selectedId)
+    sessionStorage.removeItem('selectedId');
+
+    let event;
+    for (const [tier, mainEvents] of Object.entries(mainEventsObj)) {
+      event = mainEvents.find(e => e.id === parseInt(selectedId));
+      if (event) break;
+    }
+    handleEventClick(event)
+  }
+
   // // Initialize filter functionality
   populateYearsFilter();
   populateDivisionsFilter();
@@ -396,69 +410,75 @@ function renderTable(eventsObject) {
       `;
 
       // Add event listener to the row
-      const row = createClickableRow(rowContent, async () => {
-        // Assign selectedEvent continualId
-        continualId = event.id;
-
-        // Assign selectedEvent
-        selectedEvent = event;
-
-        // Get selectedEvents 
-        const unsortedSelectedEvents = allEventsMap.get(continualId);
-
-        // Gather all pdga_event_id for query additional data (players count and total prize)
-        const pdgaEventIds = unsortedSelectedEvents.map(e => e.pdga_event_id);
-
-        const [additionalData, eventsResult] = await Promise.all([
-          getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds),
-          getEventsResultByPdgaEventIds(pdgaEventIds),
-        ]);
-
-        // Map to new array
-        const newUnsortedSelectedEvents = [];
-        unsortedSelectedEvents.forEach((event) => {
-          const playersCount =
-            additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
-              ?.players_count || "N/A";
-          const totalPrize =
-            additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
-              ?.total_prize || "N/A";
-          newUnsortedSelectedEvents.push({
-            ...event,
-            players_count: playersCount,
-            total_prize: totalPrize,
-          });
-        });
-        pastEventsList = sortingEventsByDate(newUnsortedSelectedEvents);
-
-        const pdgaNumbers = Array.from(
-          new Set(eventsResult.map((e) => +e.pdga_number))
-        );
-
-        const winnersData = await getPlayersByPdgaNumbers(pdgaNumbers);
-
-        eventsResult.forEach((event) => {
-          const player = winnersData.find(
-            (p) => String(p.pdga_number) === String(event.pdga_number)
-          );
-          event.player_name = player
-            ? `${player.first_name} ${player.last_name}`
-            : "N/A";
-        });
-
-        selectedEventsResult = eventsResult;
-
-        renderEvent();
-
-        // Adjust CSS accordingly
-        document.getElementById("past-events-table").style.display = "block";
-        document.getElementById("btn-container").style.display = "flex";
-        document.getElementById("events-table").style.display = "none";
+      const row = document.createElement("tr");
+      row.innerHTML = rowContent;
+      row.addEventListener("click", () => {
+        handleEventClick(event)
       });
 
       tableBody.appendChild(row);
     });
   }
+}
+
+export async function handleEventClick(event) {
+  // Assign selectedEvent continualId
+  continualId = event.id;
+
+  // Assign selectedEvent
+  selectedEvent = event;
+
+  // Get selectedEvents 
+  const unsortedSelectedEvents = allEventsMap.get(continualId);
+
+  // Gather all pdga_event_id for query additional data (players count and total prize)
+  const pdgaEventIds = unsortedSelectedEvents.map(e => e.pdga_event_id);
+
+  const [additionalData, eventsResult] = await Promise.all([
+    getParticipantsAndPrizesPerYearByPdgaEventIds(pdgaEventIds),
+    getEventsResultByPdgaEventIds(pdgaEventIds),
+  ]);
+
+  // Map to new array
+  const newUnsortedSelectedEvents = [];
+  unsortedSelectedEvents.forEach((event) => {
+    const playersCount =
+      additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
+        ?.players_count || "N/A";
+    const totalPrize =
+      additionalData.find((e) => e.pdga_event_id === event.pdga_event_id)
+        ?.total_prize || "N/A";
+    newUnsortedSelectedEvents.push({
+      ...event,
+      players_count: playersCount,
+      total_prize: totalPrize,
+    });
+  });
+  pastEventsList = sortingEventsByDate(newUnsortedSelectedEvents);
+
+  const pdgaNumbers = Array.from(
+    new Set(eventsResult.map((e) => +e.pdga_number))
+  );
+
+  const winnersData = await getPlayersByPdgaNumbers(pdgaNumbers);
+
+  eventsResult.forEach((event) => {
+    const player = winnersData.find(
+      (p) => String(p.pdga_number) === String(event.pdga_number)
+    );
+    event.player_name = player
+      ? `${player.first_name} ${player.last_name}`
+      : "N/A";
+  });
+
+  selectedEventsResult = eventsResult;
+
+  renderEvent();
+
+  // Adjust CSS accordingly
+  document.getElementById("past-events-table").style.display = "block";
+  document.getElementById("btn-container").style.display = "flex";
+  document.getElementById("events-table").style.display = "none";
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
