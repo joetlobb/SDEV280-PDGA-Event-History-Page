@@ -150,7 +150,6 @@ const eventDivisionsMap = new Map();
   // Check if coming from search page with selected event
   const selectedId = sessionStorage.getItem('selectedId');
   if (selectedId) {
-    console.log(selectedId)
     sessionStorage.removeItem('selectedId');
 
     let event;

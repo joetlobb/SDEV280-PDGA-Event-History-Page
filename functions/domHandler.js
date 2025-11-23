@@ -15,13 +15,6 @@ export function clearTable(tableBodyId) {
   }
 }
 
-export function createClickableRow(content, clickHandler) {
-  const row = document.createElement("tr");
-  row.innerHTML = content;
-  row.addEventListener("click", clickHandler);
-  return row;
-}
-
 export function fillEmptyRows(
   tableBody,
   currentRowCount,
@@ -88,14 +81,14 @@ export function relocatePaginationControls(
 export function activateBackToAllEventsBtn() {
   const btn = document.getElementById("all-events-btn");
   const headerBtn = document.getElementById("header-back-btn");
-  
+
   const backToAllEvents = () => {
     document.getElementById("btn-container").style.display = "none";
     window.location.reload();
   };
-  
+
   btn.addEventListener("click", backToAllEvents);
-  
+
   if (headerBtn) {
     headerBtn.addEventListener("click", backToAllEvents);
   }
@@ -192,9 +185,12 @@ export function renderPastEventsTable() {
       <td>${total_prize}</td>
     `;
 
-    const row = createClickableRow(rowContent, () => {
+    const row = document.createElement("tr");
+    row.innerHTML = rowContent;
+    row.addEventListener("click", () => {
       window.open(item.website_url, "_blank");
     });
+
     tableBody.appendChild(row);
   });
 
@@ -277,10 +273,17 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
   // Show the header back button when viewing an event
   showHeaderBackButton();
 
-  // Smooth scroll to the event section
-  eventSection.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
+  const OFFSET = 100; // Define your desired offset in pixels (e.g., 100px)
+  // 1. Get the target element's position relative to the viewport
+  const elementPosition = eventSection.getBoundingClientRect().top;
+  // 2. Get the current scroll position
+  const offsetPosition = window.scrollY;
+  // 3. Calculate the new scroll position (Target Position + Current Scroll - Offset)
+  const targetScrollPosition = elementPosition + offsetPosition - OFFSET;
+  // 4. Smoothly scroll to the calculated position
+  window.scrollTo({
+    top: targetScrollPosition,
+    behavior: "smooth"
   });
 }
 
