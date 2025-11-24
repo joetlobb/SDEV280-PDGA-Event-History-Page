@@ -16,7 +16,10 @@ import {
   getEventsResultByPdgaEventIds,
   getPlayersByPdgaNumbers,
   renderDivisionsWinner,
+  renderHighestRoundRating,
+  renderTop5DivisionsRating,
   sortDivisions,
+  renderFieldSizeBoxplot,
   getUniqueEventDivisions,
   customTierOrder,
   deepCopyMapOfObjects,
@@ -502,6 +505,18 @@ export function handleVizButtonClick(buttonText) {
 
     case "Difference in Rating":
       renderDiffRating(continualId);
+      break;
+
+    case "Field Size Distribution":
+      renderFieldSizeBoxplot(pastEventsList);
+      break;
+      
+    case "Highest Round Rating":
+      renderHighestRoundRating(continualId);
+      break;
+      
+    case "Top 5 Divisions Rating":
+      renderTop5DivisionsRating(continualId);
       break;
 
     default:
