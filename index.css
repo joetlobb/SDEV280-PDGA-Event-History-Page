@@ -929,3 +929,8 @@ th[data-sort].sort-desc .sort-indicator::before {
   opacity: 1;
   font-size: 12px;
 }
+
+.search-results-header {
+  margin-top: 50px;
+
+}
