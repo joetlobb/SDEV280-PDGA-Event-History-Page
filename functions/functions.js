@@ -145,19 +145,57 @@ export function sortTiers(tiers) {
 }
 
 export function deepCopyMapOfObjects(originalMap) {
-    // 1. Convert the Map entries into an array of [key, value] pairs.
-    // 2. Map over this array.
-    // 3. For each pair [key, value], create a new pair:
-    //    - The key remains the same (assuming keys are primitives or safe to copy by reference).
-    //    - The value (the object) is deep-copied using JSON methods (or structuredClone for modern environments).
+  // 1. Convert the Map entries into an array of [key, value] pairs.
+  // 2. Map over this array.
+  // 3. For each pair [key, value], create a new pair:
+  //    - The key remains the same (assuming keys are primitives or safe to copy by reference).
+  //    - The value (the object) is deep-copied using JSON methods (or structuredClone for modern environments).
 
-    return new Map(
-      Array.from(originalMap, ([key, value]) => {
-        // Create a new, independent copy of the object
-        const clonedValue = JSON.parse(JSON.stringify(value));
+  return new Map(
+    Array.from(originalMap, ([key, value]) => {
+      // Create a new, independent copy of the object
+      const clonedValue = JSON.parse(JSON.stringify(value));
 
-        // Return the new [key, clonedValue] pair
-        return [key, clonedValue];
-      })
+      // Return the new [key, clonedValue] pair
+      return [key, clonedValue];
+    })
+  );
+};
+
+export function mergeEventResultAndDetail(eventsResult, pastEventsList) {
+  return eventsResult.map((result) => {
+    const eventDetail = pastEventsList.find(
+      (event) => event.pdga_event_id === result.pdga_event_id
     );
-  };
+    return {
+      ...result,
+      ...eventDetail,
+    };
+  });
+  /* [{}, {}, ...]
+      { cash,
+        city,
+        country,
+        division,
+        end_date,
+        event_name,
+        evt_rating,
+        id,
+        name,
+        num_rounds,
+        pdga_event_id,
+        pdga_number,
+        place,
+        player_name,
+        players_count,
+        pre_rating,
+        start_date,
+        state,
+        tier,
+        total_prize,
+        total_score,
+        tournament_director,
+        website_url,
+        year }
+  */
+};
