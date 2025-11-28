@@ -199,3 +199,81 @@ export function mergeEventResultAndDetail(eventsResult, pastEventsList) {
         year }
   */
 };
+
+export function getReigningWinnersList(eventsResult, divisionList, i, tableHeight) {
+  const divisionWinnerList = eventsResult.filter(
+    (e) => e.division === divisionList[i]
+  );
+
+  const reigningWinnersMap = new Map();
+
+  // Mapping reiging winners into map 
+  divisionWinnerList.forEach((event) => {
+    const winner = event.player_name?.trim() || "N/A";
+    const pdga = +event.pdga_number || 0;
+    const prize = +event.cash || 0;
+    const key = `${winner}___${pdga}`; // Use PDGA # as tiebreaker to avoid name collisions
+
+    if (reigningWinnersMap.has(key)) {
+      const existing = reigningWinnersMap.get(key);
+      existing.winCount += 1;
+      existing.prizeEarned += prize;
+    } else {
+      reigningWinnersMap.set(key, {
+        division: event.division,
+        winner,
+        winCount: 1,
+        pdgaNumber: pdga,
+        prizeEarned: prize,
+      });
+    }
+  });
+
+  // Convert to array (and sort by wins)
+  const reigningWinners = Array.from(reigningWinnersMap.values());
+  reigningWinners.sort((a, b) => b.winCount - a.winCount);
+  // [{division: 'MPO', winner: 'Paul McBeth', winCount: 5, pdgaNumber: 27523, prizeEarned: 22081, …}, ...]
+
+  let divisionTableHeight = 0;
+
+  // Set table height for champions table
+  if (i === 0 && tableHeight === 0) {
+    divisionTableHeight = (reigningWinners.length * 33) + 48; // 33 is one data row height + 48 which is table head height
+  } else if (i === 1) {
+    const newHeight = (reigningWinners.length * 33) + 48;
+    divisionTableHeight = tableHeight > newHeight ?
+      newHeight : tableHeight;
+  }
+
+  // Assign ranks with handling ties
+  const firstRankWinCount = reigningWinners[0]?.winCount || "N/A";
+  let currentWinCount = firstRankWinCount;
+  let currentRank = 1;
+  let rankCounter = 0;
+  reigningWinners.forEach((winner) => {
+    if (winner.winCount === currentWinCount) {
+      winner.rank = currentRank;
+      rankCounter += 1;
+    } else if (winner.winCount < currentWinCount) {
+      rankCounter += 1;
+      currentRank = rankCounter;
+      winner.rank = currentRank;
+      currentWinCount = winner.winCount;
+    }
+  });
+
+  // Format ranks
+  reigningWinners.forEach((dw) => {
+    if (dw.rank === 1) {
+      dw.rank = "1st";
+    } else if (dw.rank === 2) {
+      dw.rank = "2nd";
+    } else if (dw.rank === 3) {
+      dw.rank = "3rd";
+    } else {
+      dw.rank = dw.rank + "th";
+    }
+  });
+
+  return { reigningWinners, divisionTableHeight };
+};

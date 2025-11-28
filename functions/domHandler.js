@@ -1,5 +1,5 @@
 import { handleVizButtonClick } from "../script.js";
-import { sortDivisions } from "./functions.js";
+import { getReigningWinnersList, mergeEventResultAndDetail, sortDivisions } from "./functions.js";
 import {
   getCurrentPageData,
   getPaginationInfo,
@@ -330,95 +330,25 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   // Get unique divisions and sort them
   const allDivisions = eventsResult.map((item) => item.division);
   const uniqueDivisionsSet = new Set(allDivisions);
-  const divisionList = sortDivisions(Array.from(uniqueDivisionsSet));
+  const divisionList = sortDivisions(Array.from(uniqueDivisionsSet)); // divisionList = ['MPO', 'FPO']
 
   // Merge event details into eventsResult
-  const finalEventsResult = eventsResult.map((result) => {
-    const eventDetail = pastEventsList.find(
-      (event) => event.pdga_event_id === result.pdga_event_id
-    );
-    return {
-      ...result,
-      ...eventDetail,
-    };
-  });
+  const finalEventsResult = mergeEventResultAndDetail(eventsResult, pastEventsList);
 
-  // Loop through divisions and create cards
-  const totalCards = divisionList.length;
-  let tableHeight = 0;
+  // Loop through divisions and create 2 cards
+  let tableHeight = 0; // to make table smaller when there are less winners to display in the table
 
-  for (let i = 0; i < totalCards; i++) {
-    // Get reigning winners
-    const divisionWinnerList = [...eventsResult].filter(
-      (e) => e.division === divisionList[i]
-    );
-
-    const reigningWinnersMap = new Map();
-
-    divisionWinnerList.forEach((event) => {
-      const winner = event.player_name?.trim() || "N/A";
-      const pdga = +event.pdga_number || 0;
-      const prize = +event.cash || 0;
-      const key = `${winner}___${pdga}`; // Use PDGA # as tiebreaker to avoid name collisions
-
-      if (reigningWinnersMap.has(key)) {
-        const existing = reigningWinnersMap.get(key);
-        existing.winCount += 1;
-        existing.prizeEarned += prize;
-      } else {
-        reigningWinnersMap.set(key, {
-          division: event.division,
-          winner,
-          winCount: 1,
-          pdgaNumber: pdga,
-          prizeEarned: prize,
-        });
-      }
-    });
-
-    // Convert to array (and sort by wins)
-    const reigningWinners = Array.from(reigningWinnersMap.values());
-    reigningWinners.sort((a, b) => b.winCount - a.winCount);
-
-    // Set table height for champions table
-    if (i === 0 && tableHeight === 0) {
-      tableHeight = (reigningWinners.length * 33) + 48;
-    } else if (i === 1) {
-      const newHeight = (reigningWinners.length * 33) + 48;
-      tableHeight = tableHeight > newHeight ?
-        newHeight : tableHeight;
-    }
-
-    // Assign ranks with handling ties
-    const firstRankWinCount = reigningWinners[0]?.winCount || "N/A";
-    let currentWinCount = firstRankWinCount;
-    let currentRank = 1;
-    reigningWinners.forEach((dw) => {
-      if (dw.winCount === currentWinCount) {
-        dw.rank = currentRank;
-      } else if (dw.winCount < currentWinCount) {
-        currentRank += 1;
-        dw.rank = currentRank;
-        currentWinCount = dw.winCount;
-      }
-    });
-
-    // Format ranks
-    reigningWinners.forEach((dw) => {
-      if (dw.rank === 1) {
-        dw.rank = "1st";
-      } else if (dw.rank === 2) {
-        dw.rank = "2nd";
-      } else if (dw.rank === 3) {
-        dw.rank = "3rd";
-      } else {
-        dw.rank = dw.rank + "th";
-      }
-    });
-
+  for (let i = 0; i < 2; i++) {
     // Create card content
     const cardContent = `
     <div class="division-card">
+            <div class="filter-item">
+              <label for="division">Select Division</label>
+              <select id="${divisionList[i]}-division">
+                  <option value="">MPO</option>
+                  <option value="">MPG</option>
+              </select>
+            </div>
             <h2>${divisionList[i]}</h2>
             <h4>All-Time Champions</h4>
             <div class='divisions-table-wrapper'>
@@ -454,6 +384,10 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
     `;
 
     section.innerHTML += cardContent;
+
+    const { reigningWinners, divisionTableHeight } = getReigningWinnersList(eventsResult, divisionList, i, tableHeight);
+
+    tableHeight = divisionTableHeight;
 
     // Populate all-time champions table
     const championsTBody = document.getElementById(
