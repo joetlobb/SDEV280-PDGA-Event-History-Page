@@ -200,9 +200,9 @@ export function mergeEventResultAndDetail(eventsResult, pastEventsList) {
   */
 };
 
-export function getReigningWinnersList(eventsResult, divisionList, i, tableHeight) {
+export function getReigningWinnersList(eventsResult, division, i, tableHeight) {
   const divisionWinnerList = eventsResult.filter(
-    (e) => e.division === divisionList[i]
+    (e) => e.division === division
   );
 
   const reigningWinnersMap = new Map();
@@ -276,4 +276,12 @@ export function getReigningWinnersList(eventsResult, divisionList, i, tableHeigh
   });
 
   return { reigningWinners, divisionTableHeight };
+};
+
+// Get past events division winners and sort by year
+export function getPastDivisionWinners(division, finalEventsResult) {
+  const pastDivisionWinners = finalEventsResult.filter(
+    (fe) => fe.division === division
+  );
+  return pastDivisionWinners.sort((a, b) => b.year - a.year);
 };

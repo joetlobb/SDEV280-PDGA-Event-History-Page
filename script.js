@@ -23,6 +23,7 @@ import {
   getUniqueEventDivisions,
   customTierOrder,
   deepCopyMapOfObjects,
+  activateDivisionWinnerCardSelection,
 } from "./functions/index.js";
 
 const allEventsMap = new Map();
@@ -30,6 +31,7 @@ const mainEventsObj = {};
 let selectedEvent;
 let selectedEventsResult = [];
 let pastEventsList = [];
+let finalEventsResult = []
 let continualId;
 const eventIdsContinualIdsMap = new Map();
 const eventDivisionsMap = new Map();
@@ -383,6 +385,7 @@ function renderEvent() {
   renderEventDetails(selectedEvent, pastEventsList);
   renderSelectedVizButton();
   renderDivisionsWinner(selectedEventsResult, pastEventsList);
+  activateDivisionWinnerCardSelection();
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
@@ -508,11 +511,11 @@ export function handleVizButtonClick(buttonText) {
     case "Field Size Distribution":
       renderFieldSizeBoxplot(pastEventsList);
       break;
-      
+
     case "Highest Round Rating":
       renderHighestRoundRating(continualId);
       break;
-      
+
     case "Top 5 Divisions Rating":
       renderTop5DivisionsRating(continualId);
       break;
@@ -521,3 +524,15 @@ export function handleVizButtonClick(buttonText) {
       console.error("Unknown visualization button:", buttonText);
   }
 }
+
+export function setFinalEventsResult(result) {
+  finalEventsResult = result;
+};
+
+export function getFinalEventsResult() {
+  return finalEventsResult;
+}
+
+export function getSelectedEventResult() {
+  return selectedEventsResult;
+};

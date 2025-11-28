@@ -1,5 +1,5 @@
-import { handleVizButtonClick } from "../script.js";
-import { getReigningWinnersList, mergeEventResultAndDetail, sortDivisions } from "./functions.js";
+import { getFinalEventsResult, getSelectedEventResult, handleVizButtonClick, setFinalEventsResult } from "../script.js";
+import { getPastDivisionWinners, getReigningWinnersList, mergeEventResultAndDetail, sortDivisions } from "./functions.js";
 import {
   getCurrentPageData,
   getPaginationInfo,
@@ -334,21 +334,25 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
 
   // Merge event details into eventsResult
   const finalEventsResult = mergeEventResultAndDetail(eventsResult, pastEventsList);
+  setFinalEventsResult(finalEventsResult);
 
   // Loop through divisions and create 2 cards
   let tableHeight = 0; // to make table smaller when there are less winners to display in the table
 
   for (let i = 0; i < 2; i++) {
+    let isLeftCard;
+    if (i === 0) isLeftCard = true;
+
     // Create card content
     const cardContent = `
     <div class="division-card">
             <div class="filter-item">
               <label for="division">Select Division</label>
-              <select id="${divisionList[i]}-division">
+              <select id="${isLeftCard ? 'left' : 'right'}-division">
                   <option value="">Division</option>
               </select>
             </div>
-            <h2>${divisionList[i]}</h2>
+            <h2 id="${isLeftCard ? 'left' : 'right'}-division-h2">${divisionList[i]}</h2>
             <h4>All-Time Champions</h4>
             <div class='divisions-table-wrapper'>
               <table>
@@ -360,7 +364,7 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
                     <th>Total Prize Earned</th>
                   </tr>
                 </thead>
-                <tbody id="${divisionList[i]}-champions">
+                <tbody id="${isLeftCard ? 'left' : 'right'}-champions">
                 </tbody>
               </table>
             </div>
@@ -375,7 +379,7 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
                     <th>Prize</th>
                   </tr>
                 </thead>
-                <tbody id="past-${divisionList[i]}-winners">
+                <tbody id="past-${isLeftCard ? 'left' : 'right'}-winners">
                 </tbody>
               </table>
             </div>  
@@ -385,27 +389,25 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
     section.innerHTML += cardContent;
 
     // Populate division options in dropdown list
-    let selectedDivisionElement = document.getElementById(divisionList[i] + '-division');
+    let selectedDivisionElement = document.getElementById(isLeftCard ? 'left-division' : 'right-division');
     if (selectedDivisionElement) {
       selectedDivisionElement.innerHTML = '';
       for (let j = 0; j < divisionList.length; j++) {
         selectedDivisionElement.innerHTML += `<option value="${divisionList[j]}">${divisionList[j]}</option>`;
-      }
+      };
+      selectedDivisionElement.value = divisionList[i];
     };
 
     // Get sorted reigningWinners
-    const { reigningWinners, divisionTableHeight } = getReigningWinnersList(eventsResult, divisionList, i, tableHeight);
+    const { reigningWinners, divisionTableHeight } = getReigningWinnersList(eventsResult, divisionList[i], i, tableHeight);
 
-    // Get past events division winners and sort by year
-    const pastDivisionWinners = finalEventsResult.filter(
-      (fe) => fe.division === divisionList[i]
-    );
-    pastDivisionWinners.sort((a, b) => b.year - a.year);
+    // Get past events division winners
+    const pastDivisionWinners = getPastDivisionWinners(divisionList[i], finalEventsResult);
 
     // Set table height
     tableHeight = divisionTableHeight;
 
-    populateDivisionsWinnersTable(divisionList[i], reigningWinners, pastDivisionWinners);
+    populateDivisionsWinnersTable(divisionList[i], reigningWinners, pastDivisionWinners, isLeftCard);
   };
 
   const allTables = document.querySelectorAll('.divisions-table-wrapper');
@@ -420,9 +422,11 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   };
 };
 
-export function populateDivisionsWinnersTable(division, reigningWinners, pastWinners) {
+export function populateDivisionsWinnersTable(division, reigningWinners, pastWinners, isLeftCard) {
   // Populate all-time champions table
-  const championsTBody = document.getElementById(division + '-champions');
+  const championsTBody = document.getElementById(isLeftCard ? 'left-champions' : 'right-champions');
+
+  championsTBody.innerHTML = '';
 
   if (championsTBody && reigningWinners?.length > 0) {
     const rows = reigningWinners
@@ -443,7 +447,9 @@ export function populateDivisionsWinnersTable(division, reigningWinners, pastWin
   }
 
   // Populate recent winners table
-  const recentWinnersTBody = document.getElementById('past-' + division + '-winners');
+  const recentWinnersTBody = document.getElementById(isLeftCard ? 'past-left-winners' : 'past-right-winners');
+
+  recentWinnersTBody.innerHTML = '';
 
   if (recentWinnersTBody && pastWinners?.length > 0) {
     const rows = pastWinners
@@ -477,3 +483,33 @@ export function hideHeaderBackButton() {
     headerBtn.classList.add("hidden");
   }
 }
+
+export function activateDivisionWinnerCardSelection() {
+  const leftCardSelectedDivision = document.getElementById('left-division');
+  const rightCardSelectedDivision = document.getElementById('right-division');
+
+  const eventsResult = getSelectedEventResult();
+  const finalEventsResult = getFinalEventsResult();
+
+  function getWinnersAndPopulate(division, isLeftCard) {
+    document.getElementById(isLeftCard ? 'left-division-h2' : 'right-division-h2').textContent = division;
+
+    // Get sorted reigningWinners
+    const { reigningWinners } = getReigningWinnersList(eventsResult, division, 0, 0);
+
+    // Get past events division winners
+    const pastDivisionWinners = getPastDivisionWinners(division, finalEventsResult);
+
+    populateDivisionsWinnersTable(division, reigningWinners, pastDivisionWinners, isLeftCard);
+  };
+
+  leftCardSelectedDivision.addEventListener("change", () => {
+    const division = leftCardSelectedDivision.value;
+    getWinnersAndPopulate(division, true)
+  });
+
+  rightCardSelectedDivision.addEventListener("change", () => {
+    const division = rightCardSelectedDivision.value;
+    getWinnersAndPopulate(division, false)
+  });
+};
