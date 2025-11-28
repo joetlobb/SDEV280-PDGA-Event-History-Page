@@ -163,6 +163,8 @@ const eventDivisionsMap = new Map();
     handleEventClick(event)
   }
 
+  window.addEventListener('popstate',  () => window.location.reload());
+
   // // Initialize filter functionality
   populateYearsFilter();
   populateDivisionsFilter();
@@ -369,8 +371,10 @@ if (searchForm && searchInput) {
     e.preventDefault();
     const query = searchInput.value.trim();
     if (query) {
+      // Replace old state before redirect
+      history.replaceState(null, '', window.location.origin);
       // Redirect to search page with search query
-      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+      window.location.href = `${origin}/search.html?q=${encodeURIComponent(query)}`;
     }
   });
 }
@@ -481,6 +485,9 @@ export async function handleEventClick(event) {
   document.getElementById("past-events-table").style.display = "block";
   document.getElementById("btn-container").style.display = "flex";
   document.getElementById("events-table").style.display = "none";
+
+  const newPath = `/id/${continualId}`;
+  history.pushState({ state: 'details', id: continualId }, null, newPath);
 }
 
 // --------------------------------------------------------------------------------------------------------------------------
