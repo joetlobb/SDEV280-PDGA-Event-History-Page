@@ -25,10 +25,8 @@ import {
   deepCopyMapOfObjects,
 } from "./functions/index.js";
 
-const allEventsData = [];
 const allEventsMap = new Map();
 const mainEventsObj = {};
-let recentEventsList = [];
 let selectedEvent;
 let selectedEventsResult = [];
 let pastEventsList = [];
