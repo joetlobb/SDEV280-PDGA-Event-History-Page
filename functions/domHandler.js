@@ -345,8 +345,7 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
             <div class="filter-item">
               <label for="division">Select Division</label>
               <select id="${divisionList[i]}-division">
-                  <option value="">MPO</option>
-                  <option value="">MPG</option>
+                  <option value="">Division</option>
               </select>
             </div>
             <h2>${divisionList[i]}</h2>
@@ -385,63 +384,29 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
 
     section.innerHTML += cardContent;
 
+    // Populate division options in dropdown list
+    let selectedDivisionElement = document.getElementById(divisionList[i] + '-division');
+    if (selectedDivisionElement) {
+      selectedDivisionElement.innerHTML = '';
+      for (let j = 0; j < divisionList.length; j++) {
+        selectedDivisionElement.innerHTML += `<option value="${divisionList[j]}">${divisionList[j]}</option>`;
+      }
+    };
+
+    // Get sorted reigningWinners
     const { reigningWinners, divisionTableHeight } = getReigningWinnersList(eventsResult, divisionList, i, tableHeight);
 
-    tableHeight = divisionTableHeight;
-
-    // Populate all-time champions table
-    const championsTBody = document.getElementById(
-      `${divisionList[i]}-champions`
-    );
-
-    if (championsTBody && reigningWinners?.length > 0) {
-      const rows = reigningWinners
-        .map((winner) => {
-          const prizes = winner.prizeEarned ?? winner.prize ?? 0;
-          return `
-            <tr data-division="${divisionList[i]}" data-winner="${winner.winner
-            }">
-              <td>${winner.rank || "-"}</td>
-              <td>${winner.winner}</td>
-              <td>${winner.winCount || 0}</td>
-              <td>$${prizes.toLocaleString()}</td>
-            </tr>
-          `.trim();
-        })
-        .join("");
-
-      championsTBody.insertAdjacentHTML("beforeend", rows);
-    }
-
-    // Get past events division winners
+    // Get past events division winners and sort by year
     const pastDivisionWinners = finalEventsResult.filter(
       (fe) => fe.division === divisionList[i]
     );
     pastDivisionWinners.sort((a, b) => b.year - a.year);
 
-    // Populate recent winners table
-    const recentWinnersTBody = document.getElementById(
-      `past-${divisionList[i]}-winners`
-    );
+    // Set table height
+    tableHeight = divisionTableHeight;
 
-    if (recentWinnersTBody && pastDivisionWinners?.length > 0) {
-      const rows = pastDivisionWinners
-        .map((event) => {
-          return `
-            <tr data-division="${divisionList[i]}" data-past-winner="${event.player_name || 'N/A'
-            }">
-              <td>${event.year || "N/A"}</td>
-              <td>${event.player_name || 'N/A'}</td>
-              <td>${event.total_score || 0}</td>
-              <td>$${(+event.cash).toLocaleString() || $0}</td>
-            </tr>
-          `.trim();
-        })
-        .join("");
-
-      recentWinnersTBody.insertAdjacentHTML("beforeend", rows);
-    }
-  }
+    populateDivisionsWinnersTable(divisionList[i], reigningWinners, pastDivisionWinners);
+  };
 
   const allTables = document.querySelectorAll('.divisions-table-wrapper');
   allTables.forEach(wrapper => {
@@ -452,8 +417,52 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   if (allDivisionsCard.length === 1) {
     document.getElementById('division-section').style.gridTemplateColumns = 'repeat(4, 1fr)';
     allDivisionsCard[0].style.gridColumn = '2/4';
+  };
+};
+
+export function populateDivisionsWinnersTable(division, reigningWinners, pastWinners) {
+  // Populate all-time champions table
+  const championsTBody = document.getElementById(division + '-champions');
+
+  if (championsTBody && reigningWinners?.length > 0) {
+    const rows = reigningWinners
+      .map((winner) => {
+        const prizes = winner.prizeEarned ?? winner.prize ?? 0;
+        return `
+            <tr data-division="${division}" data-winner="${winner.winner}">
+              <td>${winner.rank || "-"}</td>
+              <td>${winner.winner}</td>
+              <td>${winner.winCount || 0}</td>
+              <td>$${prizes.toLocaleString()}</td>
+            </tr>
+          `.trim();
+      })
+      .join("");
+
+    championsTBody.insertAdjacentHTML("beforeend", rows);
   }
-}
+
+  // Populate recent winners table
+  const recentWinnersTBody = document.getElementById('past-' + division + '-winners');
+
+  if (recentWinnersTBody && pastWinners?.length > 0) {
+    const rows = pastWinners
+      .map((event) => {
+        return `
+            <tr data-division="${division}" data-past-winner="${event.player_name || 'N/A'
+          }">
+              <td>${event.year || "N/A"}</td>
+              <td>${event.player_name || 'N/A'}</td>
+              <td>${event.total_score || 0}</td>
+              <td>$${(+event.cash).toLocaleString() || $0}</td>
+            </tr>
+          `.trim();
+      })
+      .join("");
+
+    recentWinnersTBody.insertAdjacentHTML("beforeend", rows);
+  };
+};
 
 export function showHeaderBackButton() {
   const headerBtn = document.getElementById("header-back-btn");
