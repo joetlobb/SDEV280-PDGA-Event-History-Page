@@ -84,6 +84,7 @@ export function activateBackToAllEventsBtn() {
 
   const backToAllEvents = () => {
     document.getElementById("btn-container").style.display = "none";
+    history.replaceState(null, '', window.location.origin);
     window.location.reload();
   };
 
