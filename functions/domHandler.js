@@ -340,7 +340,7 @@ export function renderDivisionsWinner(eventsResult, pastEventsList) {
   // Loop through divisions and create 2 cards
   let tableHeight = 0; // to make table smaller when there are less winners to display in the table
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < Math.min(2, divisionList.length); i++) {
     let isLeftCard;
     if (i === 0) isLeftCard = true;
 
