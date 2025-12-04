@@ -260,6 +260,14 @@ export function renderEventDetails(selectedEvent, pastEventsList) {
     eventCity.textContent = 'Multiple Locations,\u00A0';
     eventState.textContent = '';
     eventCountry.textContent = selectedEvent.country || "N/A";
+  } else if (selectedEvent.city === 'Multiple Cities' && selectedEvent.state === '') {
+    eventCity.textContent = selectedEvent.city + ',\u00A0';
+    eventState.textContent = '';
+    eventCountry.textContent = selectedEvent.country || "N/A";
+  } else if (selectedEvent.city === 'Multiple Cities' && selectedEvent.state !== '') {
+    eventCity.textContent = '';
+    eventState.textContent = selectedEvent.state + ',\u00A0';
+    eventCountry.textContent = selectedEvent.country || "N/A";
   } else {
     eventCity.textContent = selectedEvent.city + ",\u00A0" || "N/A,\u00A0";
     eventState.textContent = selectedEvent.state
