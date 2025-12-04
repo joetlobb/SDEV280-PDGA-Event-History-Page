@@ -1,6 +1,23 @@
 import { deepCopyMapOfObjects } from "./functions.js";
 import { getEventsResultByPdgaEventIds } from "./queries.js";
 
+export function processNorthwestDgcEvents(allEventsMap) {
+    const map = deepCopyMapOfObjects(allEventsMap);
+    const northwestDgcEvents = map.get(16);
+    map.delete(16);
+
+    northwestDgcEvents.forEach(event => {
+        if (!event.event_name.includes('Beaver')) {
+            event.alt_name = "Discraft's Portland Open; Northwest DGC";
+            if (!map.get(event.id)) {
+                map.set(event.id, []);
+            };
+            map.get(event.id).push(event);
+        };
+    });
+    return map;
+};
+
 export async function processWinterTimeOpenEvents(allEventsMap) {
     const map = deepCopyMapOfObjects(allEventsMap);
     const wintertimeEvents = map.get(28);

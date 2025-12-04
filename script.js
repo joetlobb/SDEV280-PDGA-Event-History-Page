@@ -24,7 +24,8 @@ import {
   customTierOrder,
   deepCopyMapOfObjects,
   activateDivisionWinnerCardSelection,
-  processWinterTimeOpenEvents
+  processWinterTimeOpenEvents,
+  processNorthwestDgcEvents
 } from "./functions/index.js";
 
 let allEventsMap = new Map();
@@ -97,9 +98,12 @@ const eventDivisionsMap = new Map();
     })
   })
 
+  // Process northwest dgc events
+  const processedNwdgcAllEventsMap = processNorthwestDgcEvents(allEventsMap);
+
   // Process wintertime open events
-  const updatedallEventsMap = await processWinterTimeOpenEvents(allEventsMap);
-  allEventsMap = updatedallEventsMap;
+  const processedWintertimeAllEventsMap = await processWinterTimeOpenEvents(processedNwdgcAllEventsMap);
+  allEventsMap = processedWintertimeAllEventsMap;
 
   // Separate main events by tier
   const mainEvents = [];
