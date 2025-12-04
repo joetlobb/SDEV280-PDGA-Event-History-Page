@@ -173,17 +173,13 @@ export function renderPastEventsTable() {
 
   // Add data rows
   pageData.forEach((item) => {
-    const total_prize =
-      item.total_prize === "N/A"
-        ? "N/A"
-        : `$${(+item.total_prize).toLocaleString()}`;
-
     const rowContent = `
       <td>${item.year}</td>
       <td>${item.event_name}</td>
       <td>${item.start_date}</td>
-      <td>${item.players_count}</td>
-      <td>${total_prize}</td>
+      <td>${item.city}</td>
+      <td>${item.country}</td>
+      <td>${item.tournament_director === '0' ? 'N/A' : item.tournament_director}</td>
     `;
 
     const row = document.createElement("tr");

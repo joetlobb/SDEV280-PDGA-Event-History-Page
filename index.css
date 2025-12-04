@@ -735,27 +735,31 @@ tbody tr.empty-row:hover::before {
   display: none;
 }
 
+.past-events-table th,
+.past-events-table td {
+  text-align: center;
+}
+
 .past-events-table th:first-child,
 .past-events-table td:first-child {
   width: 80px;
+  text-align: left;
 }
 
 .past-events-table th:nth-child(2),
 .past-events-table td:nth-child(2) {
-  width: 550px;
+  width: 500px;
+  text-align: left;
 }
 
 .past-events-table th:nth-child(3),
-.past-events-table td:nth-child(3),
-.past-events-table th:nth-child(4),
-.past-events-table td:nth-child(4) {
-  text-align: center;
+.past-events-table td:nth-child(3) {
+  width: 120px;
 }
 
 .past-events-table th:last-child,
 .past-events-table td:last-child {
-  width: 100px;
-  text-align: right;
+  width: 180px;
 }
 
 .btn-container {
