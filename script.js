@@ -24,9 +24,10 @@ import {
   customTierOrder,
   deepCopyMapOfObjects,
   activateDivisionWinnerCardSelection,
+  processWinterTimeOpenEvents
 } from "./functions/index.js";
 
-const allEventsMap = new Map();
+let allEventsMap = new Map();
 const mainEventsObj = {};
 let selectedEvent;
 let selectedEventsResult = [];
@@ -96,6 +97,10 @@ const eventDivisionsMap = new Map();
     })
   })
 
+  // Process wintertime open events
+  const updatedallEventsMap = await processWinterTimeOpenEvents(allEventsMap);
+  allEventsMap = updatedallEventsMap;
+
   // Separate main events by tier
   const mainEvents = [];
   const copyAllEventsMap = deepCopyMapOfObjects(allEventsMap);
@@ -121,9 +126,9 @@ const eventDivisionsMap = new Map();
       }
     }
   })
-  mainEventsObj.major = [...mainEvents.filter(e => e.tier === 'M')];
-  mainEventsObj.elite = [...mainEvents.filter(e => e.tier === 'NT')];
-  mainEventsObj.others = [...mainEvents.filter(e => e.tier !== 'M' && e.tier !== 'NT')];
+  mainEventsObj.major = mainEvents.filter(e => e.tier === 'M');
+  mainEventsObj.elite = mainEvents.filter(e => e.tier === 'NT');
+  mainEventsObj.others = mainEvents.filter(e => e.tier !== 'M' && e.tier !== 'NT');
 
   // Sort events by name separate by tier
   for (const [tier, mainEvents] of Object.entries(mainEventsObj)) {
@@ -151,7 +156,12 @@ const eventDivisionsMap = new Map();
   renderTable(mainEventsObj);
 
   // Check if coming from search page with selected event
-  const selectedId = sessionStorage.getItem('selectedId');
+  let selectedId = sessionStorage.getItem('selectedId');
+
+  // If wintertime open event is selected, show wintertime open professional (2801), 
+  // TODO: future fix for search.js to use same process for wintertime open events into professional and amateur 2801 and 2802
+  if (+selectedId === 28) selectedId = 2801;
+
   if (selectedId) {
     sessionStorage.removeItem('selectedId');
 
