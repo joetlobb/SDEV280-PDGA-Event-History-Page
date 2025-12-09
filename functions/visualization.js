@@ -291,7 +291,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
 
   const xAxis = {
     type: "value",
-    min: minFieldSize - (maxFieldSize - minFieldSize) * 0.1,
+    min: 0,
     max: maxFieldSize + (maxFieldSize - minFieldSize) * 0.1,
     name: "Number of Players",
     nameLocation: "middle",
@@ -314,45 +314,16 @@ export function renderFieldSizeBoxplot(pastEventsList) {
       show: false,
     },
   };
-
+  
+  
   const series = [
     // Full range bar (min to max)
-    {
-      name: "Range",
-      type: "bar",
-      data: [
-        {
-          value: maxFieldSize - minFieldSize,
-          itemStyle: {
-            color: "rgba(68, 114, 196, 0.2)",
-          },
-        },
-      ],
-      barWidth: 40,
-      stack: "total",
-      label: {
-        show: false,
-      },
-    },
-    // Offset bar to start from min
-    {
-      name: "Offset",
-      type: "bar",
-      data: [minFieldSize],
-      barWidth: 40,
-      stack: "total",
-      itemStyle: {
-        color: "transparent",
-      },
-      label: {
-        show: false,
-      },
-    },
+    
     // Q1 marker
     {
       name: "Q1",
       type: "scatter",
-      data: [[q1, "Field Size Range"]],
+      data: [[q1]],
       symbolSize: 15,
       itemStyle: {
         color: "#5470c6",
@@ -372,7 +343,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
     {
       name: "Median",
       type: "scatter",
-      data: [[median, "Field Size Range"]],
+      data: [[median]],
       symbolSize: 18,
       symbol: "diamond",
       itemStyle: {
@@ -383,7 +354,8 @@ export function renderFieldSizeBoxplot(pastEventsList) {
       label: {
         show: true,
         formatter: "Median: {c}",
-        position: "top",
+        position: "bottom",
+        distance: 12,
         fontSize: 11,
         fontWeight: "bold",
       },
@@ -393,8 +365,9 @@ export function renderFieldSizeBoxplot(pastEventsList) {
     {
       name: "Q3",
       type: "scatter",
-      data: [[q3, "Field Size Range"]],
+      data: [[q3]],
       symbolSize: 15,
+      symbol: "roundRect",
       itemStyle: {
         color: "#5470c6",
         borderColor: "#2c4a8f",
@@ -404,6 +377,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
         show: true,
         formatter: "Q3: {c}",
         position: "top",
+        distance: 12,
         fontSize: 11,
         fontWeight: "bold",
       },
@@ -413,7 +387,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
     {
       name: "Minimum",
       type: "scatter",
-      data: [[minFieldSize, "Field Size Range"]],
+      data: [[minFieldSize]],
       symbolSize: 12,
       symbol: "rect",
       itemStyle: {
@@ -425,6 +399,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
         show: true,
         formatter: "Min: {c}",
         position: "bottom",
+        distance: 12,
         fontSize: 10,
       },
       z: 3,
@@ -433,9 +408,9 @@ export function renderFieldSizeBoxplot(pastEventsList) {
     {
       name: "Maximum",
       type: "scatter",
-      data: [[maxFieldSize, "Field Size Range"]],
+      data: [[maxFieldSize]],
       symbolSize: 12,
-      symbol: "rect",
+      symbol: "triangle",
       itemStyle: {
         color: "#ee6666",
         borderColor: "#b84444",
@@ -445,6 +420,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
         show: true,
         formatter: "Max: {c}",
         position: "bottom",
+        distance: 12,
         fontSize: 10,
       },
       z: 3,
@@ -467,6 +443,7 @@ export function renderFieldSizeBoxplot(pastEventsList) {
 
   vizDiv.appendChild(summaryDiv);
 }
+
 
 
 export function renderHighestRoundRating(continualId) {
@@ -502,12 +479,15 @@ export function renderHighestRoundRating(continualId) {
       name: "Round Rating",
       nameLocation: "middle",
       nameGap: 50,
+      min: 800,
+      max: 1100,
       axisLabel: {
         formatter: "{value}",
       },
     };
 
-    const highestRatings = sortedData.map((event) => event.highest_round_rating);
+    const highestRatings = sortedData.map(event => Number(event.highest_round_rating));
+
 
     const series = [
       {
@@ -601,6 +581,7 @@ export function renderTop5DivisionsRating(continualId) {
       name: "Average Event Rating",
       nameLocation: "middle",
       nameGap: 60,
+      min: 500,
       nameTextStyle: {
         padding: [0, 0, 0, 0],
       },
